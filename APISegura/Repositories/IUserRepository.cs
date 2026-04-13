@@ -1,8 +1,11 @@
 ﻿using APISegura.Entities;
 
-namespace APISegura.Repositories;
-public interface IUserRepository
+namespace APISegura.Repositories
 {
-    Task<User?> GetByUsername(string username);
-    Task<int> Create(User user);
+    public interface IUserRepository
+    {
+        Task<User?> GetByUsername(string username);
+        Task<User?> GetById(int id);
+        Task<int> Create(User user);
+    }
 }

@@ -31,17 +31,15 @@ public class PasswordService
     public bool Verify(string password, string storedHash, string storedSalt, int iterations)
     {
         var saltBytes = Convert.FromBase64String(storedSalt);
+        var hashBytes = Convert.FromBase64String(storedHash);
 
-        var hashBytes = Rfc2898DeriveBytes.Pbkdf2(
+        var computed = Rfc2898DeriveBytes.Pbkdf2(
             password,
             saltBytes,
             iterations,
             HashAlgorithmName.SHA256,
-            storedHash.Length * 3 / 4); // tamaño aprox desde Base64
+            hashBytes.Length);
 
-        var computed = Convert.ToBase64String(hashBytes);
-        return CryptographicOperations.FixedTimeEquals(
-            Convert.FromBase64String(storedHash),
-            hashBytes);
+        return CryptographicOperations.FixedTimeEquals(hashBytes, computed);
     }
 }
