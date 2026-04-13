@@ -54,6 +54,29 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         };
     }
 
+    public async Task Update(RefreshToken token)
+    {
+        using var conn = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var query = @"
+        UPDATE RefreshTokens
+        SET 
+            IsRevoked = @IsRevoked,
+            RevokedAt = @RevokedAt,
+            ReplacedByToken = @ReplacedByToken
+        WHERE Token = @Token";
+
+        using var cmd = new SqlCommand(query, conn);
+
+        cmd.Parameters.AddWithValue("@IsRevoked", token.IsRevoked);
+        cmd.Parameters.AddWithValue("@RevokedAt", (object?)token.RevokedAt ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@ReplacedByToken", (object?)token.ReplacedByToken ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Token", token.Token);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
     public async Task Revoke(string token)
     {
         using var conn = new SqlConnection(_config.GetConnectionString("DefaultConnection"));

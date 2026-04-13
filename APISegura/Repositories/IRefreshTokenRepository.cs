@@ -7,5 +7,6 @@ namespace APISegura.Repositories
         Task Save(RefreshToken token);
         Task<RefreshToken?> Get(string token);
         Task Revoke(string token);
+        Task Update(RefreshToken token);
     }
 }

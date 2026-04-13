@@ -1,32 +1,39 @@
-﻿using APISegura.Repositories;
-using APISegura.Entities;
+﻿using APISegura.Entities;
+using APISegura.Repositories;
 
 namespace APISegura.Services;
 
 public class AuthService
 {
     private readonly IUserRepository _repo;
-    private readonly JwtService _jwt;
-    private readonly PasswordService _pwd;
     private readonly IRefreshTokenRepository _refreshRepo;
+    private readonly IConfiguration _config;
+    private readonly JwtService _jwt;
+    private readonly PasswordService _pwd;    
     private readonly TokenService _tokenService;
+   
 
     public AuthService(
         IUserRepository repo,
-        JwtService jwt,
-        PasswordService pwd,
         IRefreshTokenRepository refreshRepo,
-        TokenService tokenService)
+        JwtService jwt,
+        PasswordService pwd,       
+        TokenService tokenService,
+        IConfiguration config)
     {
         _repo = repo;
         _jwt = jwt;
         _pwd = pwd;
         _refreshRepo = refreshRepo;
         _tokenService = tokenService;
+        _config = config;
     }
 
     public async Task<(string accessToken, string refreshToken)?> Login(string username, string password)
     {
+        var jwt = _config.GetSection("Jwt");
+        var expirationDays = int.Parse(jwt["RefreshTokenExpirationDays"]);
+
         var user = await _repo.GetByUsername(username);
         if (user == null) return null;
 
@@ -41,7 +48,8 @@ public class AuthService
         {
             UserId = user.Id,
             Token = refreshToken,
-            Expiration = DateTime.UtcNow.AddDays(7)
+            Expiration = DateTime.UtcNow.AddDays(expirationDays),
+            Created = DateTime.UtcNow
         });
 
         return (accessToken, refreshToken);
@@ -54,23 +62,28 @@ public class AuthService
         if (stored == null || stored.IsRevoked || stored.Expiration < DateTime.UtcNow)
             return null;
 
-        // 🔒 revocamos el token usado
-        await _refreshRepo.Revoke(refreshToken);
-
         var user = await _repo.GetById(stored.UserId);
         if (user == null) return null;
 
-        // 🎫 nuevo access token
         var newAccessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
-
-        // 🔁 nuevo refresh token (ROTACIÓN)
         var newRefreshToken = _tokenService.GenerateRefreshToken();
 
+        var days = int.Parse(_config["Jwt:RefreshTokenExpirationDays"]);
+
+        // 🔒 ROTACIÓN
+        stored.IsRevoked = true;
+        stored.RevokedAt = DateTime.UtcNow;
+        stored.ReplacedByToken = newRefreshToken;
+
+        await _refreshRepo.Update(stored);
+
+        // 💾 nuevo refresh token
         await _refreshRepo.Save(new RefreshToken
         {
             UserId = user.Id,
             Token = newRefreshToken,
-            Expiration = DateTime.UtcNow.AddDays(7)
+            Expiration = DateTime.UtcNow.AddDays(days),
+            Created = DateTime.UtcNow
         });
 
         return (newAccessToken, newRefreshToken);
@@ -102,6 +115,9 @@ public class AuthService
 
         if (stored == null) return;
 
-        await _refreshRepo.Revoke(refreshToken);
+        stored.IsRevoked = true;
+        stored.RevokedAt = DateTime.UtcNow;
+
+        await _refreshRepo.Update(stored);
     }
 }
