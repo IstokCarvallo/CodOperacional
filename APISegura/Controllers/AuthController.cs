@@ -18,13 +18,13 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.Login(request.Username, request.Password);
 
-        if (result == null)
-            return Unauthorized();
+        if (!result.Success)
+            return Unauthorized(new { message = result.Error });
 
         return Ok(new AuthResponse
         {
-            AccessToken = result.Value.accessToken,
-            RefreshToken = result.Value.refreshToken
+            AccessToken = result.Data.AccessToken,
+            RefreshToken = result.Data.RefreshToken
         });
     }
 
@@ -33,29 +33,33 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.Refresh(request.RefreshToken);
 
-        if (result == null)
-            return Unauthorized();
+        if (!result.Success)
+            return Unauthorized(new { message = result.Error });
 
         return Ok(new AuthResponse
         {
-            AccessToken = result.Value.accessToken,
-            RefreshToken = result.Value.refreshToken
+            AccessToken = result.Data.AccessToken,
+            RefreshToken = result.Data.RefreshToken
         });
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var (ok, error) = await _authService.Register(request.Username, request.Password, request.Role);
-        if (!ok) return BadRequest(error);
+        var result = await _authService.Register(request.Username, request.Password, request.Role);
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
 
-        return Ok("Usuario creado");
+        return Ok(new { message = "Usuario creado" });
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(RefreshRequest request)
     {
-        await _authService.Logout(request.RefreshToken);
-        return Ok();
+        var result = await _authService.Logout(request.RefreshToken);
+        if (!result.Success)
+            return BadRequest(new { message = result.Error });
+
+        return Ok(new { message = "Logout exitoso" });
     }
 }

@@ -1,4 +1,6 @@
-﻿using APISegura.Entities;
+﻿using APISegura.Common;
+using APISegura.Dtos.Auth;
+using APISegura.Entities;
 using APISegura.Repositories;
 
 namespace APISegura.Services;
@@ -8,10 +10,10 @@ public class AuthService
     private readonly IUserRepository _repo;
     private readonly IRefreshTokenRepository _refreshRepo;
     private readonly IConfiguration _config;
+    private readonly ILogger<AuthService> _logger;
     private readonly JwtService _jwt;
     private readonly PasswordService _pwd;    
     private readonly TokenService _tokenService;
-   
 
     public AuthService(
         IUserRepository repo,
@@ -19,7 +21,8 @@ public class AuthService
         JwtService jwt,
         PasswordService pwd,       
         TokenService tokenService,
-        IConfiguration config)
+        IConfiguration config,
+        ILogger<AuthService> logger)
     {
         _repo = repo;
         _jwt = jwt;
@@ -27,97 +30,235 @@ public class AuthService
         _refreshRepo = refreshRepo;
         _tokenService = tokenService;
         _config = config;
+        _logger = logger;
     }
 
-    public async Task<(string accessToken, string refreshToken)?> Login(string username, string password)
+    public async Task<Result<AuthResponse>> Login(string username, string password)
     {
-        var jwt = _config.GetSection("Jwt");
-        var expirationDays = int.Parse(jwt["RefreshTokenExpirationDays"]);
+        _logger.LogInformation("Intento de inicio de sesión para {Username}, a las {time}", username, DateTime.UtcNow);
 
-        var user = await _repo.GetByUsername(username);
-        if (user == null) return null;
-
-        var ok = _pwd.Verify(password, user.PasswordHash, user.PasswordSalt, user.Iterations);
-        if (!ok) return null;
-
-        var accessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
-
-        var refreshToken = _tokenService.GenerateRefreshToken();
-
-        await _refreshRepo.Save(new RefreshToken
+        try
         {
-            UserId = user.Id,
-            Token = refreshToken,
-            Expiration = DateTime.UtcNow.AddDays(expirationDays),
-            Created = DateTime.UtcNow
-        });
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                _logger.LogWarning("Error al iniciar sesión: nombre de usuario vacío en {time}", DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Username requerido");
+            }
 
-        return (accessToken, refreshToken);
-    }
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                _logger.LogWarning("Error de inicio de sesión: contraseña vacía para {Username} en {time}", username, DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Password requerido");
+            }
 
-    public async Task<(string accessToken, string refreshToken)?> Refresh(string refreshToken)
-    {
-        var stored = await _refreshRepo.Get(refreshToken);
+            var jwt = _config.GetSection("Jwt");
+            var expirationDays = int.Parse(jwt["RefreshTokenExpirationDays"]);
 
-        if (stored == null || stored.IsRevoked || stored.Expiration < DateTime.UtcNow)
-            return null;
+            var user = await _repo.GetByUsername(username);
+            if (user == null)
+            {
+                _logger.LogWarning("Error de inicio de sesión: usuario no encontrado: {Username} en {time}", username, DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Credenciales inválidas");
+            }
 
-        var user = await _repo.GetById(stored.UserId);
-        if (user == null) return null;
+            var ok = _pwd.Verify(password, user.PasswordHash, user.PasswordSalt, user.Iterations);
+            if (!ok)
+            {
+                _logger.LogWarning("Error de inicio de sesión: contraseña inválida para el ID de usuario {UserId} en {time}", user.Id, DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Credenciales inválidas");
+            }
 
-        var newAccessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
-        var newRefreshToken = _tokenService.GenerateRefreshToken();
+            var accessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
+            var refreshToken = _tokenService.GenerateRefreshToken();
 
-        var days = int.Parse(_config["Jwt:RefreshTokenExpirationDays"]);
+            await _refreshRepo.Save(new RefreshToken
+            {
+                UserId = user.Id,
+                Token = refreshToken,
+                Expiration = DateTime.UtcNow.AddDays(expirationDays),
+                Created = DateTime.UtcNow
+            });
 
-        // 🔒 ROTACIÓN
-        stored.IsRevoked = true;
-        stored.RevokedAt = DateTime.UtcNow;
-        stored.ReplacedByToken = newRefreshToken;
+            _logger.LogInformation("Inicio de sesión exitoso para el ID de usuario {UserId} en {time}", user.Id, DateTime.UtcNow);
 
-        await _refreshRepo.Update(stored);
-
-        // 💾 nuevo refresh token
-        await _refreshRepo.Save(new RefreshToken
+            return Result<AuthResponse>.Ok(new AuthResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            });
+        }
+        catch (Exception ex)
         {
-            UserId = user.Id,
-            Token = newRefreshToken,
-            Expiration = DateTime.UtcNow.AddDays(days),
-            Created = DateTime.UtcNow
-        });
-
-        return (newAccessToken, newRefreshToken);
+            _logger.LogError(ex, "Error no controlado durante el inicio de sesión para {Username} en {time}", username, DateTime.UtcNow);
+            throw;
+        }
     }
 
-    public async Task<(bool ok, string? error)> Register(string username, string password, string role)
+    public async Task<Result<AuthResponse>> Refresh(string refreshToken)
     {
-        var exists = await _repo.GetByUsername(username);
-        if (exists != null) return (false, "Usuario ya existe");
+        _logger.LogInformation("Intento de actualización del token en {time}", DateTime.UtcNow);
 
-        var (hash, salt, it) = _pwd.HashPassword(password);
-
-        var user = new User
+        try
         {
-            Username = username,
-            PasswordHash = hash,
-            PasswordSalt = salt,
-            Iterations = it,
-            Role = role
-        };
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                _logger.LogWarning("Error al actualizar: token vacío en {time}", DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Token inválido");
+            }
 
-        await _repo.Create(user);
-        return (true, null);
+            var stored = await _refreshRepo.Get(refreshToken);
+
+            if (stored == null)
+            {
+                _logger.LogWarning("Error al actualizar: token no encontrado en {time}", DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Token inválido");
+            }
+
+            if (stored.IsRevoked)
+            {
+                _logger.LogWarning("Error al actualizar: token revocado para el ID de usuario {UserId} en {time}", stored.UserId, DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Token inválido");
+            }
+
+            if (stored.Expiration < DateTime.UtcNow)
+            {
+                _logger.LogWarning("Error al actualizar: el token ha caducado para el ID de usuario {UserId} en {time}", stored.UserId, DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Token expirado");
+            }
+
+            var user = await _repo.GetById(stored.UserId);
+            if (user == null)
+            {
+                _logger.LogError("Error al actualizar: no se encontró el usuario para el ID de usuario {UserId} en {time}", stored.UserId, DateTime.UtcNow);
+                return Result<AuthResponse>.Fail("Usuario no válido");
+            }
+
+            var newAccessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+
+            var days = int.Parse(_config["Jwt:RefreshTokenExpirationDays"]);
+
+            // 🔒 ROTACIÓN
+            stored.IsRevoked = true;
+            stored.RevokedAt = DateTime.UtcNow;
+            stored.ReplacedByToken = newRefreshToken;
+
+            await _refreshRepo.Update(stored);
+
+            _logger.LogInformation("Se ha revocado el token de actualización anterior para el ID de usuario {UserId} en {time}", user.Id, DateTime.UtcNow);
+
+            // 💾 nuevo refresh token
+            await _refreshRepo.Save(new RefreshToken
+            {
+                UserId = user.Id,
+                Token = newRefreshToken,
+                Expiration = DateTime.UtcNow.AddDays(days),
+                Created = DateTime.UtcNow
+            });
+
+            _logger.LogInformation("Actualización exitosa para el ID de usuario {UserId} en {time}", user.Id, DateTime.UtcNow);
+
+            return Result<AuthResponse>.Ok(new AuthResponse
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error no controlado durante el proceso de actualización del token en {time}", DateTime.UtcNow);
+            throw;
+        }
     }
 
-    public async Task Logout(string refreshToken)
+    public async Task<Result<bool>> Register(string username, string password, string role)
     {
-        var stored = await _refreshRepo.Get(refreshToken);
+        _logger.LogInformation("Intento de registro para {Username} en {time}", username, DateTime.UtcNow);
 
-        if (stored == null) return;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                _logger.LogWarning("Error al registrarse: nombre de usuario vacío en {time}", DateTime.UtcNow);
+                return Result<bool>.Fail("Username requerido");
+            }
 
-        stored.IsRevoked = true;
-        stored.RevokedAt = DateTime.UtcNow;
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                _logger.LogWarning("El registro falló: contraseña vacía para {Username} en {time}", username, DateTime.UtcNow);
+                return Result<bool>.Fail("Password requerido");
+            }
 
-        await _refreshRepo.Update(stored);
+            var exists = await _repo.GetByUsername(username);
+            if (exists != null)
+            {
+                _logger.LogWarning("Error al registrar el registro: el usuario ya existe: {Username} en {time}", username, DateTime.UtcNow);
+                return Result<bool>.Fail("Usuario ya existe");
+            }
+
+            var (hash, salt, it) = _pwd.HashPassword(password);
+
+            var user = new User
+            {
+                Username = username,
+                PasswordHash = hash,
+                PasswordSalt = salt,
+                Iterations = it,
+                Role = role
+            };
+
+            await _repo.Create(user);
+
+            _logger.LogInformation("Registro exitoso para {Username} con el rol {Role} en {time}", username, role, DateTime.UtcNow);
+
+            return Result<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error no controlado durante el registro para {Username} en {time}", username, DateTime.UtcNow);
+            throw;
+        }
+    }
+
+    public async Task<Result<bool>> Logout(string refreshToken)
+    {
+        _logger.LogInformation("Intento de cierre de sesión en {time}", DateTime.UtcNow);
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                _logger.LogWarning("Error al cerrar sesión: token de actualización vacío en {time}", DateTime.UtcNow);
+                return Result<bool>.Fail("Token inválido");
+            }
+            var stored = await _refreshRepo.Get(refreshToken);
+
+            if (stored == null)
+            {
+                _logger.LogWarning("Error al cerrar sesión: no se encontró el token de actualización en {time}", DateTime.UtcNow);
+                return Result<bool>.Fail("Token inválido");
+            }
+
+            if (stored.IsRevoked)
+            {
+                _logger.LogInformation("Cierre de sesión omitido: el token ya ha sido revocado para el UserId {UserId} en {time}", stored.UserId, DateTime.UtcNow);
+                return Result<bool>.Ok(true);
+            }
+
+            stored.IsRevoked = true;
+            stored.RevokedAt = DateTime.UtcNow;
+
+            await _refreshRepo.Update(stored);
+
+            _logger.LogInformation("Cierre de sesión exitoso para UserId {UserId} en {time}", stored.UserId, DateTime.UtcNow);
+
+            return Result<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error no controlado durante el cierre de sesión  en {time}", DateTime.UtcNow);
+            throw;
+        }
+
     }
 }
