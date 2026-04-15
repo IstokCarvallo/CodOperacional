@@ -81,4 +81,26 @@ public class UserRepository : IUserRepository
         var id = await cmd.ExecuteScalarAsync();
         return Convert.ToInt32(id);
     }
+
+    public async Task Update(User user)
+    {
+        using var conn = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var query = @"
+            UPDATE Users
+            SET 
+                FailedAttempts = @FailedAttempts,
+                LockoutUntil = @LockoutUntil
+            WHERE Id = @Id
+        ";
+
+        using var cmd = new SqlCommand(query, conn);
+
+        cmd.Parameters.AddWithValue("@FailedAttempts", user.FailedAttempts);
+        cmd.Parameters.AddWithValue("@LockoutUntil", (object?)user.LockoutUntil ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Id", user.Id);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
 }

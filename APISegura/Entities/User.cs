@@ -8,4 +8,6 @@ public class User
     public string PasswordSalt { get; set; }
     public int Iterations { get; set; }
     public string Role { get; set; }
+    public int FailedAttempts { get; set; }
+    public DateTime? LockoutUntil { get; set; }
 }

@@ -4,6 +4,7 @@ using APISegura.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Threading.RateLimiting;
 using Serilog;
 using System.Text;
 
@@ -40,13 +41,45 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
+        ValidateIssuer = true,
+        ValidateAudience = true,
         ValidateIssuerSigningKey = true,
+        ValidIssuer = jwt["Issuer"],
+        ValidAudience = jwt["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
+});
+
+// Define Ratelimiter
+builder.Services.AddRateLimiter(options =>
+{
+    options.OnRejected = async (context, token) =>
+    {
+        var ip = context.HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        Log.Warning("Rate limit excedido para IP {IP} en {Time}", ip, DateTime.UtcNow);
+
+        context.HttpContext.Response.StatusCode = 429;
+
+        await context.HttpContext.Response.WriteAsync(
+            "Demasiados intentos. Intente nuevamente más tarde.",
+            token);
+    };
+
+    options.AddPolicy("login-ip-policy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+              ?? httpContext.Connection.RemoteIpAddress?.ToString()
+              ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5, // 🔒 5 intentos
+                Window = TimeSpan.FromMinutes(1), // por minuto
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0 // no encolar → rechaza directo
+            }));
 });
 
 builder.Services.AddAuthorization();
@@ -87,7 +120,15 @@ app.UseSwaggerUI();
 
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
+// Configurar Forwarded Headers para trabajar detrás de un proxy inverso
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
+
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

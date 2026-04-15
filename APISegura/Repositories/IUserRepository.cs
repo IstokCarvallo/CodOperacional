@@ -7,5 +7,6 @@ namespace APISegura.Repositories
         Task<User?> GetByUsername(string username);
         Task<User?> GetById(int id);
         Task<int> Create(User user);
+        Task Update(User user);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using APISegura.Dtos.Auth;
 using APISegura.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -14,6 +15,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("login-ip-policy")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
         var result = await _authService.Login(request.Username, request.Password);

@@ -6,7 +6,7 @@ public class PasswordService
 {
     private const int SaltSize = 16;      // 128 bits
     private const int KeySize = 32;       // 256 bits
-    private const int DefaultIterations = 10000;
+    private const int DefaultIterations = 150000;
 
     public (string hash, string salt, int iterations) HashPassword(string password)
     {

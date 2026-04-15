@@ -60,12 +60,12 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         await conn.OpenAsync();
 
         var query = @"
-        UPDATE RefreshTokens
-        SET 
-            IsRevoked = @IsRevoked,
-            RevokedAt = @RevokedAt,
-            ReplacedByToken = @ReplacedByToken
-        WHERE Token = @Token";
+            UPDATE RefreshTokens
+            SET 
+                IsRevoked = @IsRevoked,
+                RevokedAt = @RevokedAt,
+                ReplacedByToken = @ReplacedByToken
+            WHERE Token = @Token";
 
         using var cmd = new SqlCommand(query, conn);
 
@@ -88,6 +88,29 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             WHERE Token = @Token", conn);
 
         cmd.Parameters.AddWithValue("@Token", token);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task RevokeAllByUser(int userId)
+    {
+        using var conn = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+
+        var query = @"
+            UPDATE RefreshTokens
+            SET 
+                IsRevoked = 1,
+                RevokedAt = @Now
+            WHERE UserId = @UserId
+            AND IsRevoked = 0
+            AND Expiration > @Now
+        ";
+
+        using var cmd = new SqlCommand(query, conn);
+
+        cmd.Parameters.AddWithValue("@UserId", userId);
+        cmd.Parameters.AddWithValue("@Now", DateTime.UtcNow);
 
         await cmd.ExecuteNonQueryAsync();
     }

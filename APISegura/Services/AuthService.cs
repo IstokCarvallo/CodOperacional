@@ -61,12 +61,34 @@ public class AuthService
                 return Result<AuthResponse>.Fail("Credenciales inválidas");
             }
 
+            // 🔒 1.Verificar si está bloqueado
+            if (user.LockoutUntil.HasValue && user.LockoutUntil > DateTime.UtcNow)
+            {
+                _logger.LogWarning("Usuario bloqueado {UserId} hasta {LockoutUntil}", user.Id, user.LockoutUntil);
+                return Result<AuthResponse>.Fail("Credenciales inválidas");
+            }
+
             var ok = _pwd.Verify(password, user.PasswordHash, user.PasswordSalt, user.Iterations);
             if (!ok)
             {
-                _logger.LogWarning("Error de inicio de sesión: contraseña inválida para el ID de usuario {UserId} en {time}", user.Id, DateTime.UtcNow);
+                user.FailedAttempts++;
+
+                _logger.LogWarning("Password incorrecta para {UserId}. Intento #{Attempts}", user.Id, user.FailedAttempts);
+
+                if (user.FailedAttempts >= 5)
+                {
+                    user.LockoutUntil = DateTime.UtcNow.AddMinutes(5);
+                    _logger.LogWarning("Usuario {UserId} bloqueado hasta {LockoutUntil} debido a múltiples intentos fallidos", user.Id, user.LockoutUntil);
+                }
+
+                await _repo.Update(user);
+
                 return Result<AuthResponse>.Fail("Credenciales inválidas");
             }
+
+            user.FailedAttempts = 0;
+            user.LockoutUntil = null;
+            await _repo.Update(user);
 
             var accessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
             var refreshToken = _tokenService.GenerateRefreshToken();
@@ -116,7 +138,8 @@ public class AuthService
 
             if (stored.IsRevoked)
             {
-                _logger.LogWarning("Error al actualizar: token revocado para el ID de usuario {UserId} en {time}", stored.UserId, DateTime.UtcNow);
+                _logger.LogWarning("Posible reuse attack para UserId {UserId}", stored.UserId);
+                await _refreshRepo.RevokeAllByUser(stored.UserId);
                 return Result<AuthResponse>.Fail("Token inválido");
             }
 
@@ -130,7 +153,7 @@ public class AuthService
             if (user == null)
             {
                 _logger.LogError("Error al actualizar: no se encontró el usuario para el ID de usuario {UserId} en {time}", stored.UserId, DateTime.UtcNow);
-                return Result<AuthResponse>.Fail("Usuario no válido");
+                return Result<AuthResponse>.Fail("Credenciales inválidas");
             }
 
             var newAccessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
