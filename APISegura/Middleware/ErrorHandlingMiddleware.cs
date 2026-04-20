@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿using Microsoft.Data.SqlClient;
 
 namespace APISegura.Middleware
 {
@@ -18,39 +17,31 @@ namespace APISegura.Middleware
 
         public async Task Invoke(HttpContext context)
         {
+            var traceId = context.TraceIdentifier;
+            var path = context.Request.Path;
+
             try
             {
                 await _next(context);
             }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, "SQL ERROR TraceId: {TraceId} Path: {Path}", traceId, path);
+
+                await HandleException(context, traceId, "Error de base de datos");
+            }
             catch (Exception ex)
             {
-                var traceId = context.TraceIdentifier;
+                _logger.LogError(ex, "UNHANDLED ERROR TraceId: {TraceId}", traceId);
 
-                _logger.LogError(ex,
-                    "Unhandled exception {TraceId} at {Path}",
-                    traceId,
-                    context.Request.Path);
-
-                await HandleExceptionAsync(context, ex, traceId);
+                await HandleException(context, traceId, "Error interno del servidor");
             }
         }
 
-        private static Task HandleExceptionAsync(
-            HttpContext context,
-            Exception ex,
-            string traceId)
+        private static async Task HandleException(HttpContext context, string traceId, string message)
         {
+            context.Response.StatusCode = 500;
             context.Response.ContentType = "application/json";
-
-            var statusCode = HttpStatusCode.InternalServerError;
-            var message = "Error interno del servidor";
-
-            // 🔧 Mapeo básico (puedes extenderlo después)
-            if (ex is ArgumentException)
-            {
-                statusCode = HttpStatusCode.BadRequest;
-                message = ex.Message;
-            }
 
             var response = new
             {
@@ -59,10 +50,7 @@ namespace APISegura.Middleware
                 traceId
             };
 
-            context.Response.StatusCode = (int)statusCode;
-
-            return context.Response.WriteAsync(
-                JsonSerializer.Serialize(response));
+            await context.Response.WriteAsJsonAsync(response);
         }
     }
 }

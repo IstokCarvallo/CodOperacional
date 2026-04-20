@@ -1,7 +1,7 @@
 ﻿using APISegura.Common;
 using APISegura.Dtos.Auth;
 using APISegura.Entities;
-using APISegura.Repositories;
+using APISegura.Repositories.Interfaces;
 
 namespace APISegura.Services;
 

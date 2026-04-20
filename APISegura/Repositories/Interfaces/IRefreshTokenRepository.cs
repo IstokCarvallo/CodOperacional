@@ -1,6 +1,6 @@
 ﻿using APISegura.Entities;
 
-namespace APISegura.Repositories
+namespace APISegura.Repositories.Interfaces
 {
     public interface IRefreshTokenRepository
     {

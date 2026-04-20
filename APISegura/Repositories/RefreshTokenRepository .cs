@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using APISegura.Entities;
+using APISegura.Repositories.Interfaces;
 
 namespace APISegura.Repositories;
 

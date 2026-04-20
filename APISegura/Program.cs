@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using System.Threading.RateLimiting;
 using Serilog;
 using System.Text;
+using APISegura.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,10 +15,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IPlantaRepository, PlantaRepository>();
+builder.Services.AddScoped<ICuartelRepository, CuartelRepository>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<PlantaService>();
+builder.Services.AddScoped<CuartelService>();
+builder.Services.AddHttpContextAccessor();
 
 // Serilog configuration
 Log.Logger = new LoggerConfiguration()
