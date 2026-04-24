@@ -1,5 +1,6 @@
 ﻿using APISegura.Common;
 using APISegura.Dtos.Planta;
+using APISegura.Entities;
 
 namespace APISegura.Repositories.Interfaces
 {
@@ -7,5 +8,6 @@ namespace APISegura.Repositories.Interfaces
     {
         Task<List<PlantaDto>> SearchAsync(string? filtro);
         Task<Result> UpdateCodigoOperacionalAsync(int codigo, string nuevoCodigo, string usuario);
+        Task<(IEnumerable<Planta>, int)> GetPagedAsync(int pageNumber, int pageSize);
     }
 }

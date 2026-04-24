@@ -39,5 +39,13 @@ namespace APISegura.Controllers
 
             return Json(new { success = true });
         }
+
+        [HttpGet("paged")]
+        [Authorize(Roles = "User,Admin")]
+        public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            var result = await _service.GetPagedAsync(pageNumber, pageSize);
+            return Ok(result);
+        }
     }
 }

@@ -1,8 +1,11 @@
 ﻿using APISegura.Common;
 using APISegura.Dtos.Planta;
+using APISegura.Entities;
 using APISegura.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Numerics;
+using System.Reflection.PortableExecutable;
 
 namespace APISegura.Repositories;
 
@@ -67,5 +70,43 @@ public class PlantaRepository : IPlantaRepository
         }
 
         return Result.Failure("Respuesta inválida del servidor");
+    }
+
+    public async Task<(IEnumerable<Planta>, int)> GetPagedAsync(int pageNumber, int pageSize)
+    {
+        var plantas = new List<Planta>();
+        int total = 0;
+
+        using (var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
+        using (var command = new SqlCommand("dbo.FProc_Plantas_GetPaged", connection))
+        {
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.AddWithValue("@PageNumber", pageNumber);
+            command.Parameters.AddWithValue("@PageSize", pageSize);
+
+            await connection.OpenAsync();
+
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+                // Total
+                if (await reader.ReadAsync())
+                    total = reader[0] != DBNull.Value ? Convert.ToInt32(reader[0]) : 0;
+
+                // Resultset datos
+                await reader.NextResultAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    plantas.Add(new Planta
+                    {
+                        Codigo = reader["plde_codigo"] != DBNull.Value ? Convert.ToInt32(reader["plde_codigo"]) : 0,
+                        Nombre = reader["plde_nombre"] != DBNull.Value ? reader["plde_nombre"].ToString() : string.Empty
+                    });
+                    
+                }
+            }
+        }
+        return (plantas, total);
     }
 }

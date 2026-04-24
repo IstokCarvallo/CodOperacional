@@ -1,5 +1,8 @@
 ﻿using APISegura.Common;
+using APISegura.Dtos.Common;
 using APISegura.Dtos.Planta;
+using APISegura.Entities;
+using APISegura.Repositories;
 using APISegura.Repositories.Interfaces;
 
 namespace APISegura.Services
@@ -53,6 +56,23 @@ namespace APISegura.Services
                 _logger.LogError(ex, "Error actualizando código operacional. Codigo: {Codigo}, Nuevo: {NuevoCodigo}", codigo, nuevoCodigo);
                 throw;
             }
+        }
+
+        public async Task<PagedResult<Planta>> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            if (pageNumber <= 0) pageNumber = 1;
+            if (pageSize <= 0) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var (items, total) = await _repository.GetPagedAsync(pageNumber, pageSize);
+
+            return new PagedResult<Planta>
+            {
+                Items = items,
+                TotalRegistros = total,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
     }
 }
