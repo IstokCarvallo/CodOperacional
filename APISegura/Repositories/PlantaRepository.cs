@@ -38,7 +38,8 @@ public class PlantaRepository : IPlantaRepository
             {
                 Codigo = reader.GetInt32(0),
                 Nombre = reader.GetString(1),
-                CodigoOperacional = reader.IsDBNull(2) ? "" : reader.GetString(2)
+                CodigoOperacional = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                FechaUltimaActualizacion = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3)
             });
         }
 
@@ -101,7 +102,10 @@ public class PlantaRepository : IPlantaRepository
                     plantas.Add(new Planta
                     {
                         Codigo = reader["plde_codigo"] != DBNull.Value ? Convert.ToInt32(reader["plde_codigo"]) : 0,
-                        Nombre = reader["plde_nombre"] != DBNull.Value ? reader["plde_nombre"].ToString() : string.Empty
+                        Nombre = reader["plde_nombre"] != DBNull.Value ? reader["plde_nombre"].ToString() : string.Empty,
+                        FechaUltimaActualizacion = reader.IsDBNull(reader.GetOrdinal("FechaUltimaActualizacion"))
+                        ? null
+                        : reader.GetDateTime(reader.GetOrdinal("FechaUltimaActualizacion"))
                     });
                     
                 }

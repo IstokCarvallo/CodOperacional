@@ -88,7 +88,10 @@ namespace APISegura.Repositories
                     Predio = reader.GetInt32(1),
                     CodigoCuartel = reader.GetInt32(2),
                     Nombre = reader.GetString(3),
-                    CodigoOperacional = reader.IsDBNull(4) ? "" : reader.GetString(4)
+                    CodigoOperacional = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    FechaUltimaActualizacion = reader.IsDBNull(reader.GetOrdinal("FechaUltimaActualizacion"))
+                        ? null
+                        : reader.GetDateTime(reader.GetOrdinal("FechaUltimaActualizacion"))
                 });
             }
 
