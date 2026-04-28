@@ -23,6 +23,7 @@ public class JwtService
         var claims = new[]
         {
             new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             new Claim(ClaimTypes.Role, role),
             new Claim("UserId", userId.ToString())
         };

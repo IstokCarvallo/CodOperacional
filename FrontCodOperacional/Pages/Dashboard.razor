@@ -1,0 +1,14 @@
+﻿@page "/dashboard"
+
+@attribute [Authorize]
+
+<h3>Dashboard protegido</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <p>Usuario autenticado</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>No autenticado</p>
+    </NotAuthorized>
+</AuthorizeView>

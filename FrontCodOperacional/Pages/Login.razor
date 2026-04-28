@@ -1,0 +1,42 @@
+﻿@page "/login"
+@using FrontCodOperacional.Services.Api
+@using FrontCodOperacional.Auth
+@using FrontCodOperacional.Models.Auth
+
+@inject AuthApiService AuthApi
+@inject CustomAuthStateProvider AuthProvider
+@inject NavigationManager Nav
+
+<h3>Login</h3>
+
+<input @bind="usuario" placeholder="Usuario" />
+<input @bind="password" type="password" placeholder="Password" />
+
+<button @onclick="EjecutarLogin">Ingresar</button>
+
+<p>@mensaje</p>
+
+@code { 
+    string usuario = "";
+    string password = "";
+    string mensaje = "";
+
+    async Task EjecutarLogin()
+    {
+        var result = await AuthApi.Login(new LoginRequest
+        {
+            Usuario = usuario,
+            Password = password
+        });
+
+        if (result == null)
+        {
+            mensaje = "Credenciales inválidas";
+            return;
+        }
+
+        await AuthProvider.SetToken(result.AccessToken);
+
+        Nav.NavigateTo("/");
+    }
+}

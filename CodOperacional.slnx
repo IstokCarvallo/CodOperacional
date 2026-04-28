@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="APISegura/APISegura.csproj" />
+  <Project Path="FrontCodOperacional/FrontCodOperacional.csproj" Id="1a5a614c-cc67-41bd-a528-db8f23795362" />
 </Solution>
