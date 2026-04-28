@@ -6,6 +6,7 @@
 @inject AuthApiService AuthApi
 @inject CustomAuthStateProvider AuthProvider
 @inject NavigationManager Nav
+@inject TokenStorage _storage
 
 <h3>Login</h3>
 
@@ -34,6 +35,8 @@
             mensaje = "Credenciales inválidas";
             return;
         }
+
+        await _storage.SetTokens(result.AccessToken, result.RefreshToken);
 
         await AuthProvider.SetToken(result.AccessToken);
 

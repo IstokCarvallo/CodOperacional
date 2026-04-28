@@ -22,7 +22,7 @@ builder.Services.AddScoped<TokenStorage>();
 // Handler JWT
 builder.Services.AddScoped<AuthMessageHandler>();
 
-// ✅ HttpClient CORRECTO (sin factory)
+// ✅ HttpClient 
 builder.Services.AddScoped(sp =>
 {
     var handler = sp.GetRequiredService<AuthMessageHandler>();
@@ -36,7 +36,12 @@ builder.Services.AddScoped(sp =>
     };
 });
 
-// Servicios API
-builder.Services.AddScoped<AuthApiService>();
+builder.Services.AddScoped<AuthApiService>(sp =>
+{
+    return new AuthApiService(new HttpClient
+    {
+        BaseAddress = new Uri("https://localhost:7282/api/")
+    });
+});
 
 await builder.Build().RunAsync();

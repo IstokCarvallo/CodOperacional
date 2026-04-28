@@ -1,6 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using FrontCodOperacional.Models.Auth
+@inject Services.Api.AuthApiService _authApi
 @inject Auth.CustomAuthStateProvider AuthProvider
 @inject NavigationManager Nav
+@inject Auth.TokenStorage _storage
 
 @inherits LayoutComponentBase
 
@@ -25,7 +28,19 @@
 @code {
     private async Task CerrarSesion()
     {
+        var refreshToken = await _storage.GetRefreshToken();
+
+        if (!string.IsNullOrEmpty(refreshToken))
+        {
+            await _authApi.Logout(new RefreshRequest
+            {
+                RefreshToken = refreshToken
+            });
+        }
+
+        // 🔴 luego limpiar cliente
         await AuthProvider.Logout();
-        Nav.NavigateTo("/login", true); // force reload
+
+        Nav.NavigateTo("/login", true);
     }
 }

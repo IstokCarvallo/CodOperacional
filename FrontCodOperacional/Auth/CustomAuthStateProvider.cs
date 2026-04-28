@@ -24,7 +24,7 @@ namespace FrontCodOperacional.Auth
 
         public async Task Logout()
         {
-            await _storage.RemoveToken();
+            await _storage.RemoveTokens();
             var anon = new ClaimsPrincipal(new ClaimsIdentity());
             NotifyAuthenticationStateChanged(
                 Task.FromResult(new AuthenticationState(anon)));
@@ -47,23 +47,7 @@ namespace FrontCodOperacional.Auth
             }
 
             var claims = ParseClaimsFromJwt(token).ToList();
-
-            var expClaim = claims.FirstOrDefault(c => c.Type == "exp")?.Value;
-
-            if (!string.IsNullOrEmpty(expClaim) && long.TryParse(expClaim, out var exp))
-            {
-                var expDate = DateTimeOffset.FromUnixTimeSeconds(exp);
-
-                if (expDate <= DateTimeOffset.UtcNow)
-                {
-                    await _storage.RemoveToken();
-
-                    return new AuthenticationState(
-                        new ClaimsPrincipal(new ClaimsIdentity())
-                    );
-                }
-            }
-
+                       
             var roleClaims = claims
                 .Where(c =>
                     c.Type == "role" ||
