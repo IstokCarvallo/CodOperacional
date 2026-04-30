@@ -173,7 +173,7 @@ else
             IsLoading = true;
             Mensaje = null;
 
-            var data = await PlantasService.GetPaged(PageNumber, PageSize);
+            var data = await PlantasService.GetPaged(PageNumber, PageSize, CancellationToken.None);
 
             if (data != null)
             {
@@ -255,7 +255,7 @@ else
             {
                 Codigo = PlantaSeleccionada.Codigo,
                 CodigoOperacional = CodigoOperacionalInput
-            });
+            }, CancellationToken.None);
 
             CerrarModal();
             await Cargar();

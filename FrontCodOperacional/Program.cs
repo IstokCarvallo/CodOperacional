@@ -7,7 +7,6 @@ using FrontCodOperacional.Services.UI;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.RootComponents.Add<App>("#app");
@@ -22,43 +21,49 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
 // Storage
 builder.Services.AddScoped<TokenStorage>();
 
-// Handler JWT
-builder.Services.AddScoped<AuthMessageHandler>();
+// =========================
+// SERVICIOS TRANSVERSALES
+// =========================
+builder.Services.AddScoped<ToastService>();
 
-// ✅ HttpClient 
+builder.Services.AddScoped<AuthMessageHandler>();   // JWT
+builder.Services.AddScoped<HttpErrorHandler>();     // Manejo errores + Toast
+
+
+// =========================
+// HTTP CLIENT PRINCIPAL (CON JWT + ERRORES)
+// =========================
 builder.Services.AddHttpClient("API", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7282/api/");
 })
-.AddHttpMessageHandler<AuthMessageHandler>();
+.AddHttpMessageHandler<AuthMessageHandler>()   // agrega token
+.AddHttpMessageHandler<HttpErrorHandler>();    // maneja errores + toast
 
-// CLIENTE SIN JWT (AUTH)
+// 👉 ESTE es el HttpClient que usan TODOS los servicios
+builder.Services.AddScoped<HttpClient>(sp =>
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
+
+
+// =========================
+// HTTP CLIENT PARA AUTH (SIN HANDLERS)
+// =========================
 builder.Services.AddHttpClient("Auth", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7282/api/");
 });
 
-// HttpClient principal
-builder.Services.AddScoped(sp =>
-    sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
-
-// AuthApiService (CORRECTO)
+// AuthApiService usa cliente limpio
 builder.Services.AddScoped<AuthApiService>(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
     return new AuthApiService(factory.CreateClient("Auth"));
 });
 
-//Control de Errores HTTP
-builder.Services.AddScoped<ToastService>();
-builder.Services.AddTransient<HttpErrorHandler>();
 
-builder.Services.AddHttpClient("Api", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:7282/api/");
-})
-.AddHttpMessageHandler<HttpErrorHandler>();
-
+// =========================
+// API SERVICES
+// =========================
 builder.Services.AddScoped<PlantasService>();
 builder.Services.AddScoped<CuartelesService>();
 

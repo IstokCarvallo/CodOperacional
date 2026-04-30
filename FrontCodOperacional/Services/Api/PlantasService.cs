@@ -12,14 +12,14 @@ namespace FrontCodOperacional.Services.Api
             _http = http;
         }
 
-        public async Task<PagedResult<PlantaDto>?> GetPaged(int page, int size)
+        public async Task<PagedResult<PlantaDto>?> GetPaged(int page, int size, CancellationToken ct)
         {
             return await _http.GetFromJsonAsync<PagedResult<PlantaDto>>(
                 $"plantas/paged?pageNumber={page}&pageSize={size}")
                    ?? new PagedResult<PlantaDto>();
         }
 
-        public async Task ActualizarCodigo(ActualizarCodigoOperacionalRequest request)
+        public async Task ActualizarCodigo(ActualizarCodigoOperacionalRequest request, CancellationToken ct)
         {
             var response = await _http.PostAsJsonAsync(
                 "plantas/codigo-operacional",
