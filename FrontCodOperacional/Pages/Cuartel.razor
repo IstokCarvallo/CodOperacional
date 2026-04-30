@@ -1,0 +1,192 @@
+﻿@page "/cuartel"
+@attribute [Authorize]
+@using FrontCodOperacional.Models.Cuartel
+@using FrontCodOperacional.Services.Api
+
+@inject CuartelesService Service
+
+@page "/cuartel-actualizar"
+@attribute [Authorize]
+
+@inject CuartelesService Service
+
+<h3>Cuarteles</h3>
+
+<!-- PRODUCTOR -->
+<SearchSelect TItem="ProductorDto"
+              Placeholder="Buscar productor..."
+              SearchMethod="BuscarProductores"
+              ItemText="@(p => $"{p.Codigo} - {p.Nombre}")"
+              OnSelected="OnProductorSeleccionado" />
+
+<!-- PREDIO -->
+@if (ProductorSeleccionado.HasValue)
+{
+    <SearchSelect TItem="PredioDto"
+                    Placeholder="Buscar predio..."
+                    SearchMethod="BuscarPredios"
+                    ItemText="@(p => $"{p.Codigo} - {p.Nombre}")"
+                    OnSelected="OnPredioSeleccionado" />
+}
+
+<!-- TABLA CUARTELES -->
+@if (Cuarteles.Any())
+{
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Nombre</th>
+                <th>Código Operacional</th>
+                <th>Última Actualización</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Cuarteles)
+            {
+                <tr style="cursor:pointer" @onclick="() => AbrirModal(c)">
+                    <td>@c.CodigoCuartel</td>
+                    <td>@c.Nombre</td>
+                    <td>@c.CodigoOperacional</td>
+                    <td>@c.FechaUltimaActualizacion</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (MostrarModal && CuartelSeleccionado != null)
+{
+    <div class="modal fade show d-block" style="background-color:rgba(0,0,0,0.5)">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5>Actualizar Cuartel @CuartelSeleccionado.Nombre</h5>
+                    <button class="btn-close" @onclick="CerrarModal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input class="form-control" style="text-transform: uppercase;"
+                           placeholder="Código Operacional"
+                           value="@CodigoOperacional"
+                           @oninput="OnCodigoChange" />
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                    <button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    List<CuartelDto> Cuarteles = new();
+
+    int? ProductorSeleccionado;
+    int? PredioSeleccionado;
+
+    CuartelDto? CuartelSeleccionado;
+
+    private string? Mensaje;
+    private bool Guardando = false;
+    string CodigoOperacional = "";
+    bool MostrarModal = false;
+
+    private async Task<List<ProductorDto>> BuscarProductores(string filtro)
+    {
+        return await Service.GetProductores(filtro);
+    }
+
+    private async Task OnProductorSeleccionado(ProductorDto p)
+    {
+        ProductorSeleccionado = p.Codigo;
+
+        // reset estado
+        PredioSeleccionado = null;
+        Cuarteles.Clear();
+    }
+
+    private async Task<List<PredioDto>> BuscarPredios(string filtro)
+    {
+        if (!ProductorSeleccionado.HasValue)
+            return new List<PredioDto>();
+
+        return await Service.GetPredios(ProductorSeleccionado.Value, filtro);
+    }
+
+    private async Task OnPredioSeleccionado(PredioDto p)
+    {
+        PredioSeleccionado = p.Codigo;
+
+        if (ProductorSeleccionado.HasValue)
+        {
+            Cuarteles = await Service.GetCuarteles(ProductorSeleccionado.Value, p.Codigo);
+        }
+    }
+
+    void AbrirModal(CuartelDto cuartel)
+    {
+        CuartelSeleccionado = cuartel;
+        CodigoOperacional = cuartel.CodigoOperacional ?? "";
+        MostrarModal = true;
+    }
+
+    void CerrarModal()
+    {
+        MostrarModal = false;
+        CuartelSeleccionado = null;
+    }
+
+    void OnCodigoChange(ChangeEventArgs e)
+    {
+        // 🔴 VALIDACIÓN CLAVE: SIEMPRE MAYÚSCULAS
+        CodigoOperacional = e.Value?.ToString()?.ToUpper() ?? "";
+    }
+
+    async Task Guardar()
+    {
+        if (CuartelSeleccionado == null || ProductorSeleccionado == null || PredioSeleccionado == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(CodigoOperacional))
+        {
+            Mensaje = "Debe ingresar un valor.";
+            return;
+        }
+
+        try
+        {
+            Guardando = true;
+            Mensaje = null;
+
+            var dto = new UpdateCodigoOperacionalDto
+            {
+                Productor = ProductorSeleccionado.Value,
+                Predio = PredioSeleccionado.Value,
+                CodigoCuartel = CuartelSeleccionado.CodigoCuartel,
+                CodigoOperacional = CodigoOperacional
+            };
+
+            await Service.UpdateCodigoOperacional(dto);
+
+            // éxito
+            Cuarteles = await Service.GetCuarteles(
+                ProductorSeleccionado.Value,
+                PredioSeleccionado.Value);
+
+            CerrarModal();
+            Mensaje = "Actualización correcta.";
+        }
+        catch (Exception ex)
+        {
+            Mensaje = ex.Message;
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+}

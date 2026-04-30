@@ -1,0 +1,38 @@
+﻿@using FrontCodOperacional.Services.UI
+
+@inject ToastService ToastService
+
+@if (Visible)
+{
+    <div class="toast show position-fixed top-0 end-0 m-3 bg-@Tipo text-white">
+        <div class="toast-body">
+            @Mensaje
+        </div>
+    </div>
+}
+
+@code {
+    private string Mensaje = "";
+    private string Tipo = "success";
+    private bool Visible;
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += ShowToast;
+    }
+
+    void ShowToast(string mensaje, string tipo)
+    {
+        Mensaje = mensaje;
+        Tipo = tipo;
+        Visible = true;
+
+        StateHasChanged();
+
+        _ = Task.Delay(3000).ContinueWith(_ =>
+        {
+            Visible = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+}

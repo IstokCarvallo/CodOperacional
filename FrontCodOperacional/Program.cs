@@ -2,6 +2,8 @@ using FrontCodOperacional;
 using FrontCodOperacional.Auth;
 using FrontCodOperacional.Handlers;
 using FrontCodOperacional.Services.Api;
+using FrontCodOperacional.Services.Http;
+using FrontCodOperacional.Services.UI;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -47,6 +49,18 @@ builder.Services.AddScoped<AuthApiService>(sp =>
     return new AuthApiService(factory.CreateClient("Auth"));
 });
 
+//Control de Errores HTTP
+builder.Services.AddScoped<ToastService>();
+builder.Services.AddTransient<HttpErrorHandler>();
+
+builder.Services.AddHttpClient("Api", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7282/api/");
+})
+.AddHttpMessageHandler<HttpErrorHandler>();
+
 builder.Services.AddScoped<PlantasService>();
+builder.Services.AddScoped<CuartelesService>();
+
 
 await builder.Build().RunAsync();

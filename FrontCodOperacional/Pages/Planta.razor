@@ -42,7 +42,7 @@ else
             {
                 @foreach (var p in Plantas)
                 {
-                    <tr>
+                    <tr style="cursor:pointer" @onclick="() => AbrirModal(p)">
                         <td>@p.Codigo</td>
                         <td>@p.Nombre</td>
                         <td>@p.CodigoOperacional</td>
@@ -50,12 +50,6 @@ else
                             @(p.FechaUltimaActualizacion.HasValue
                                 ? p.FechaUltimaActualizacion.Value.ToString("dd-MM-yyyy HH:mm")
                                 : "-")
-                        </td>
-                        <td>
-                            <button class="btn btn-success btn-sm"
-                                    @onclick="() => AbrirModal(p)">
-                                Asignar
-                            </button>
                         </td>
                     </tr>
                 }
@@ -104,8 +98,10 @@ else
                     </div>
 
                     <input class="form-control mt-3"
+                           style="text-transform: uppercase;"
                            placeholder="Ingrese código operacional"
-                           @bind="CodigoOperacionalInput" />
+                           value="@CodigoOperacionalInput"
+                           @oninput="OnCodigoChange" />
                 </div>
 
                 <div class="modal-footer">
@@ -153,6 +149,11 @@ else
 
     private string? Mensaje;
     private bool Guardando = false;
+
+    private void OnCodigoChange(ChangeEventArgs e)
+    {
+        CodigoOperacionalInput = e.Value?.ToString()?.ToUpper() ?? string.Empty;
+    }
 
     // =========================
     // CICLO VIDA
@@ -249,26 +250,20 @@ else
             Guardando = true;
             Mensaje = null;
 
-            var ok = await PlantasService.ActualizarCodigo(
-                new ActualizarCodigoOperacionalRequest
-                {
-                    Codigo = PlantaSeleccionada.Codigo,
-                    CodigoOperacional = CodigoOperacionalInput
-                });
+            await PlantasService.ActualizarCodigo(
+            new ActualizarCodigoOperacionalRequest
+            {
+                Codigo = PlantaSeleccionada.Codigo,
+                CodigoOperacional = CodigoOperacionalInput
+            });
 
-            if (ok)
-            {
-                CerrarModal();
-                await Cargar();
-                Mensaje = "Actualización correcta.";
-            }
-            else
-            {
-                Mensaje = "Error al actualizar.";
-            }
+            CerrarModal();
+            await Cargar();
+            Mensaje = "Actualización correcta.";
         }
-        catch (UnauthorizedAccessException)
+        catch (Exception ex)
         {
+            Mensaje = ex.Message;
             Nav.NavigateTo("/login");
         }
         finally

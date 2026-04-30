@@ -1,0 +1,29 @@
+﻿@inherits ErrorBoundary
+@inject FrontCodOperacional.Services.UI.ToastService ToastService
+
+@if (CurrentException is not null)
+{
+    <LayoutView Layout="@typeof(MainLayout)">
+        <div class="alert alert-danger m-3">
+            <h5>Error inesperado</h5>
+
+            <button class="btn btn-primary" @onclick="Reset">
+                Reintentar
+            </button>
+        </div>
+    </LayoutView>
+}
+else
+    @ChildContent
+
+@code {
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        // No expongas detalles técnicos al usuario
+        ToastService.Error("Ocurrió un error inesperado");
+
+        return Task.CompletedTask;
+    }
+
+    void Reset() => Recover();
+}

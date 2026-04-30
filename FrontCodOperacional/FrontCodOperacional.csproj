@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Cuartel\" />
     <Folder Include="State\" />
   </ItemGroup>
 
