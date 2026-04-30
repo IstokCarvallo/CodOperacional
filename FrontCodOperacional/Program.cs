@@ -47,4 +47,6 @@ builder.Services.AddScoped<AuthApiService>(sp =>
     return new AuthApiService(factory.CreateClient("Auth"));
 });
 
+builder.Services.AddScoped<PlantasService>();
+
 await builder.Build().RunAsync();
