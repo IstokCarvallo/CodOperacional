@@ -1,4 +1,5 @@
 ﻿using FrontCodOperacional.Models.Auth;
+using System.Net;
 using System.Net.Http.Json;
 
 namespace FrontCodOperacional.Services.Api
@@ -26,6 +27,9 @@ namespace FrontCodOperacional.Services.Api
         {
             var response = await _http.PostAsJsonAsync("auth/refresh", request);
 
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                return null;
+            
             if (!response.IsSuccessStatusCode)
                 return null;
 

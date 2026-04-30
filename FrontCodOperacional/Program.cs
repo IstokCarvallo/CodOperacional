@@ -5,6 +5,7 @@ using FrontCodOperacional.Services.Api;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
+
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.RootComponents.Add<App>("#app");
@@ -23,25 +24,27 @@ builder.Services.AddScoped<TokenStorage>();
 builder.Services.AddScoped<AuthMessageHandler>();
 
 // ✅ HttpClient 
-builder.Services.AddScoped(sp =>
+builder.Services.AddHttpClient("API", client =>
 {
-    var handler = sp.GetRequiredService<AuthMessageHandler>();
+    client.BaseAddress = new Uri("https://localhost:7282/api/");
+})
+.AddHttpMessageHandler<AuthMessageHandler>();
 
-    // 🔴 CLAVE (esto evita tu error anterior)
-    handler.InnerHandler = new HttpClientHandler();
-
-    return new HttpClient(handler)
-    {
-        BaseAddress = new Uri("https://localhost:7282/api/")
-    };
+// CLIENTE SIN JWT (AUTH)
+builder.Services.AddHttpClient("Auth", client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7282/api/");
 });
 
+// HttpClient principal
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
+
+// AuthApiService (CORRECTO)
 builder.Services.AddScoped<AuthApiService>(sp =>
 {
-    return new AuthApiService(new HttpClient
-    {
-        BaseAddress = new Uri("https://localhost:7282/api/")
-    });
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    return new AuthApiService(factory.CreateClient("Auth"));
 });
 
 await builder.Build().RunAsync();
