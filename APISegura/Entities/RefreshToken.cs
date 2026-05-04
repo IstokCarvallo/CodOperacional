@@ -10,4 +10,14 @@ public class RefreshToken
     public DateTime Created { get; set; }
     public DateTime? RevokedAt { get; set; }
     public string? ReplacedByToken { get; set; }
+
+    public string? IpAddress { get; set; }
+
+    public string? UserAgent { get; set; }
+
+    public string? Device { get; set; }
+
+    public DateTime? LastUsedAt { get; set; }
+
+    public string? RevokedReason { get; set; }
 }

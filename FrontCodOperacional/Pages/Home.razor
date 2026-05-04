@@ -1,31 +1,67 @@
 ﻿@page "/"
-
-@attribute [Authorize]
-
-@inject FrontCodOperacional.Services.UI.ToastService Toast
 @inject HttpClient Http
+@inject AuthenticationStateProvider AuthProvider
+@using System.Security.Claims
 
-<h3>Pruebas Toast</h3>
+<h3>Home - Pruebas</h3>
 
-<button class="btn btn-success m-1" @onclick="Ok">OK</button>
-<button class="btn btn-danger m-1" @onclick="Err">Error manual</button>
-<button class="btn btn-warning m-1" @onclick="TestHttp">Error HTTP</button>
-<button class="btn btn-dark m-1" @onclick="TestUI">Error UI</button>
+<button class="btn btn-primary" @onclick="CallProtected">
+    Endpoint protegido
+</button>
+
+<button class="btn btn-warning" @onclick="CallDelayed">
+    Test refresh
+</button>
+
+<p><b>Resultado:</b> @_result</p>
+
+<hr />
+
+<h5>Claims</h5>
+
+@if (_claims != null)
+{
+    <ul>
+        @foreach (var c in _claims)
+        {
+            <li>@c.Type : @c.Value</li>
+        }
+    </ul>
+}
 
 @code {
-    void Ok() => Toast.Success("Toast OK");
+    private string _result = "";
+    private IEnumerable<Claim>? _claims;
 
-    void Err() => Toast.Error("Toast error");
-
-    // 🔴 PRUEBA 3: Error HTTP (pasa por HttpErrorHandler)
-    async Task TestHttp()
+    protected override async Task OnInitializedAsync()
     {
-        await Http.GetAsync("url-inexistente/test");
+        var auth = await AuthProvider.GetAuthenticationStateAsync();
+        _claims = auth.User.Claims;
     }
 
-    // 🔴 PRUEBA 4: Error UI (pasa por ErrorBoundary)
-    void TestUI()
+    private async Task CallProtected()
     {
-        throw new Exception("Error de prueba UI");
+        try
+        {
+            var res = await Http.GetStringAsync("test/protected");
+            _result = res;
+        }
+        catch (Exception ex)
+        {
+            _result = ex.Message;
+        }
+    }
+
+    private async Task CallDelayed()
+    {
+        try
+        {
+            var res = await Http.GetStringAsync("test/refresh-check");
+            _result = res;
+        }
+        catch (Exception ex)
+        {
+            _result = ex.Message;
+        }
     }
 }

@@ -11,6 +11,7 @@ public class AuthService
     private readonly IRefreshTokenRepository _refreshRepo;
     private readonly IConfiguration _config;
     private readonly ILogger<AuthService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly JwtService _jwt;
     private readonly PasswordService _pwd;    
     private readonly TokenService _tokenService;
@@ -22,7 +23,8 @@ public class AuthService
         PasswordService pwd,       
         TokenService tokenService,
         IConfiguration config,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IHttpContextAccessor httpContextAccessor)
     {
         _repo = repo;
         _jwt = jwt;
@@ -31,6 +33,7 @@ public class AuthService
         _tokenService = tokenService;
         _config = config;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<Result<AuthResponse>> Login(string username, string password)
@@ -61,7 +64,7 @@ public class AuthService
                 return Result<AuthResponse>.Fail("Credenciales inválidas");
             }
 
-            // 🔒 1.Verificar si está bloqueado
+            // 🔒 Verificar si está bloqueado
             if (user.LockoutUntil.HasValue && user.LockoutUntil > DateTime.UtcNow)
             {
                 _logger.LogWarning("Usuario bloqueado {UserId} hasta {LockoutUntil}", user.Id, user.LockoutUntil);
@@ -90,15 +93,20 @@ public class AuthService
             user.LockoutUntil = null;
             await _repo.Update(user);
 
-            var accessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
+            var accessToken = _jwt.GenerateToken(user);
             var refreshToken = _tokenService.GenerateRefreshToken();
+            var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            var userAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString();
 
             await _refreshRepo.Save(new RefreshToken
             {
                 UserId = user.Id,
                 Token = refreshToken,
                 Expiration = DateTime.UtcNow.AddDays(expirationDays),
-                Created = DateTime.UtcNow
+                Created = DateTime.UtcNow,
+                IpAddress = ip,
+                UserAgent = userAgent,
+                Device = ParseDevice(userAgent)
             });
 
             _logger.LogInformation("Inicio de sesión exitoso para el ID de usuario {UserId} en {time}", user.Id, DateTime.UtcNow);
@@ -140,7 +148,13 @@ public class AuthService
             {
                 _logger.LogWarning("Posible reuse attack para UserId {UserId}", stored.UserId);
                 await _refreshRepo.RevokeAllByUser(stored.UserId);
-                return Result<AuthResponse>.Fail("Token inválido");
+                var compromisedUser = await _repo.GetById(stored.UserId);
+                if (compromisedUser != null)
+                {
+                    compromisedUser.SecurityStamp = Guid.NewGuid().ToString();
+                    await _repo.UpdateSecurityStamp(compromisedUser);
+                }
+                return Result<AuthResponse>.Fail("Token comprometido");
             }
 
             if (stored.Expiration < DateTime.UtcNow)
@@ -156,7 +170,7 @@ public class AuthService
                 return Result<AuthResponse>.Fail("Credenciales inválidas");
             }
 
-            var newAccessToken = _jwt.GenerateToken(user.Username, user.Role, user.Id);
+            var newAccessToken = _jwt.GenerateToken(user);
             var newRefreshToken = _tokenService.GenerateRefreshToken();
 
             var days = int.Parse(_config["Jwt:RefreshTokenExpirationDays"]);
@@ -165,6 +179,7 @@ public class AuthService
             stored.IsRevoked = true;
             stored.RevokedAt = DateTime.UtcNow;
             stored.ReplacedByToken = newRefreshToken;
+            stored.LastUsedAt = DateTime.UtcNow;
 
             await _refreshRepo.Update(stored);
 
@@ -176,7 +191,11 @@ public class AuthService
                 UserId = user.Id,
                 Token = newRefreshToken,
                 Expiration = DateTime.UtcNow.AddDays(days),
-                Created = DateTime.UtcNow
+                Created = DateTime.UtcNow,
+                IpAddress = stored.IpAddress,
+                UserAgent = stored.UserAgent,
+                Device = stored.Device,
+                LastUsedAt = DateTime.UtcNow
             });
 
             _logger.LogInformation("Actualización exitosa para el ID de usuario {UserId} en {time}", user.Id, DateTime.UtcNow);
@@ -194,7 +213,7 @@ public class AuthService
         }
     }
 
-    public async Task<Result<bool>> Register(string username, string password, string role)
+    public async Task<Result<bool>> Register(string username, string password, string nombre, string role)
     {
         _logger.LogInformation("Intento de registro para {Username} en {time}", username, DateTime.UtcNow);
 
@@ -224,9 +243,11 @@ public class AuthService
             var user = new User
             {
                 Username = username,
+                Nombre = nombre,
                 PasswordHash = hash,
                 PasswordSalt = salt,
                 Iterations = it,
+                SecurityStamp = Guid.NewGuid().ToString(),
                 Role = role
             };
 
@@ -241,6 +262,72 @@ public class AuthService
             _logger.LogError(ex, "Error no controlado durante el registro para {Username} en {time}", username, DateTime.UtcNow);
             throw;
         }
+    }
+
+    public async Task<Result<bool>> ChangePassword(ChangePasswordRequest req)
+    {
+        try
+        {
+            var user = await _repo.GetById(req.UserId);
+
+            if (user == null)
+                return Result<bool>.Fail("Usuario no existe");
+
+            var valid = _pwd.Verify(req.CurrentPassword, user.PasswordHash, user.PasswordSalt, user.Iterations);
+
+            if (!valid)
+                return Result<bool>.Fail("Password actual incorrecta");
+
+            var (hash, salt, it) = _pwd.HashPassword(req.NewPassword);
+
+            user.PasswordHash = hash;
+            user.PasswordSalt = salt;
+            user.Iterations = it;
+            user.SecurityStamp = Guid.NewGuid().ToString();
+
+            await _repo.UpdatePassword(user);
+
+            await _refreshRepo.RevokeAllByUser(user.Id);
+
+            _logger.LogInformation("Password cambiada para UserId {UserId}", user.Id);
+
+            return Result<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error cambiando password");
+            throw;
+        }
+    }
+
+    public async Task<List<SessionDto>> GetSessions(int userId)
+    {
+        var tokens = await _refreshRepo.GetActiveByUser(userId);
+
+        return tokens.Select(t => new SessionDto
+        {
+            Token = t.Token,
+            Created = t.Created,
+            LastUsedAt = t.LastUsedAt,
+            IpAddress = t.IpAddress,
+            Device = t.Device
+        }).ToList();
+    }
+
+    public async Task<Result<bool>> RevokeSession(string token)
+    {
+        var stored = await _refreshRepo.Get(token);
+
+        if (stored == null)
+            return Result<bool>.Fail("Sesión no existe");
+
+        stored.IsRevoked = true;
+        stored.RevokedAt = DateTime.UtcNow;
+        stored.RevokedReason = "User logout";
+
+        await _refreshRepo.Update(stored);
+
+        return Result<bool>.Ok(true);
     }
 
     public async Task<Result<bool>> Logout(string refreshToken)
@@ -282,6 +369,56 @@ public class AuthService
             _logger.LogError(ex, "Error no controlado durante el cierre de sesión  en {time}", DateTime.UtcNow);
             throw;
         }
+    }
 
+    public async Task<Result<bool>> LogoutOthers(int userId, string currentToken)
+    {
+        await _refreshRepo.RevokeAllExcept(userId, currentToken);
+
+        return Result<bool>.Ok(true);
+    }
+
+    public async Task<Result<bool>> LogoutAll(int userId)
+    {
+        try
+        {
+            var user = await _repo.GetById(userId);
+
+            if (user == null)
+                return Result<bool>.Fail("Usuario no existe");
+
+            // Revocar TODOS los refresh tokens
+            await _refreshRepo.RevokeAllByUser(userId);
+
+            // Invalidar TODOS los JWT (via SecurityStamp)
+            user.SecurityStamp = Guid.NewGuid().ToString();
+
+            await _repo.UpdateSecurityStamp(user);
+
+            _logger.LogInformation("Todas las sesiones cerradas para UserId {UserId}", userId);
+
+            return Result<bool>.Ok(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error cerrando sesiones para UserId {UserId}", userId);
+            throw;
+        }
+    }
+    private string ParseDevice(string userAgent)
+    {
+        if (string.IsNullOrEmpty(userAgent))
+            return "Unknown";
+
+        if (userAgent.Contains("Chrome"))
+            return "Chrome";
+
+        if (userAgent.Contains("Firefox"))
+            return "Firefox";
+
+        if (userAgent.Contains("Edg"))
+            return "Edge";
+
+        return "Other";
     }
 }

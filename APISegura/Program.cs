@@ -1,13 +1,15 @@
 using APISegura.Middleware;
 using APISegura.Repositories;
+using APISegura.Repositories.Interfaces;
 using APISegura.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Threading.RateLimiting;
 using Serilog;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
-using APISegura.Repositories.Interfaces;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,7 @@ builder.Host.UseSerilog();
 // JWT
 var jwt = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwt["Key"]);
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
@@ -57,6 +60,49 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var repo = context.HttpContext.RequestServices
+                .GetRequiredService<IUserRepository>();
+
+            try
+            {
+                var userIdClaim = context.Principal.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                var stampClaim = context.Principal.FindFirst("stamp");
+
+                if (userIdClaim == null || stampClaim == null)
+                {
+                    context.Fail("Token inválido (claims faltantes)");
+                    return;
+                }
+
+                var userId = int.Parse(context.Principal.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+                var tokenStamp = stampClaim.Value;
+
+                var user = await repo.GetById(userId);
+
+                if (user == null)
+                {
+                    context.Fail("Usuario no existe");
+                    return;
+                }
+
+                if (user.SecurityStamp != tokenStamp)
+                {
+                    context.Fail("Token inválido (stamp)");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error validando token (stamp)");
+                context.Fail("Error validando token");
+            }
+        }
     };
 });
 

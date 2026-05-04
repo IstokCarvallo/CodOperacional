@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using APISegura.Entities;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -13,7 +14,7 @@ public class JwtService
         _config = config;
     }
 
-    public string GenerateToken(string username, string role, int userId)
+    public string GenerateToken(User user)
     {
         var jwt = _config.GetSection("Jwt");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]));
@@ -22,10 +23,14 @@ public class JwtService
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(ClaimTypes.Role, role),
-            new Claim("UserId", userId.ToString())
+            //new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),            
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim("nombre", user.Nombre),
+            new Claim("stamp", user.SecurityStamp ?? "")
         };
 
         var token = new JwtSecurityToken(
