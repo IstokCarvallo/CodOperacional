@@ -1,5 +1,6 @@
-﻿using APISegura.Repositories.Interfaces;
+﻿using APISegura.Common;
 using APISegura.Dtos.Common;
+using APISegura.Repositories.Interfaces;
 
 namespace APISegura.Services
 {

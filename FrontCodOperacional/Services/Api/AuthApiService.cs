@@ -36,6 +36,18 @@ namespace FrontCodOperacional.Services.Api
             return await response.Content.ReadFromJsonAsync<LoginResponse>();
         }
 
+        public async Task<bool> ForgotPassword(ForgotPasswordRequest request)
+        {
+            var response = await _http.PostAsJsonAsync("auth/forgot-password", request);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> ResetPassword(ResetPasswordRequest request)
+        {
+            var response = await _http.PostAsJsonAsync("auth/reset-password", request);
+            return response.IsSuccessStatusCode;
+        }
+
         // 🔴 LOGOUT
         public async Task<bool> Logout(RefreshRequest request)
         {

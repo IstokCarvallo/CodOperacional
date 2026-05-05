@@ -1,4 +1,5 @@
 ﻿using APISegura.Common;
+using APISegura.Common.Validators;
 using APISegura.Dtos.Auth;
 using APISegura.Entities;
 using APISegura.Repositories.Interfaces;
@@ -213,53 +214,62 @@ public class AuthService
         }
     }
 
-    public async Task<Result<bool>> Register(string username, string password, string nombre, string role)
+    public async Task<Result<bool>> Register(RegisterRequest request)
     {
-        _logger.LogInformation("Intento de registro para {Username} en {time}", username, DateTime.UtcNow);
+        _logger.LogInformation("Intento de registro para {Username} en {time}", request.Username, DateTime.UtcNow);
 
         try
         {
-            if (string.IsNullOrWhiteSpace(username))
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return Result<bool>.Fail("Email requerido");
+
+            request.Email = EmailValidator.Normalize(request.Email);
+
+            var existingByEmail = await _repo.GetByEmail(request.Email);
+            if (existingByEmail != null)
+                return Result<bool>.Fail("Email ya registrado");
+
+            if (string.IsNullOrWhiteSpace(request.Username))
             {
                 _logger.LogWarning("Error al registrarse: nombre de usuario vacío en {time}", DateTime.UtcNow);
                 return Result<bool>.Fail("Username requerido");
             }
 
-            if (string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(request.Password))
             {
-                _logger.LogWarning("El registro falló: contraseña vacía para {Username} en {time}", username, DateTime.UtcNow);
+                _logger.LogWarning("El registro falló: contraseña vacía para {Username} en {time}", request.Username, DateTime.UtcNow);
                 return Result<bool>.Fail("Password requerido");
             }
 
-            var exists = await _repo.GetByUsername(username);
+            var exists = await _repo.GetByUsername(request.Username);
             if (exists != null)
             {
-                _logger.LogWarning("Error al registrar el registro: el usuario ya existe: {Username} en {time}", username, DateTime.UtcNow);
+                _logger.LogWarning("Error al registrar el registro: el usuario ya existe: {Username} en {time}", request.Username, DateTime.UtcNow);
                 return Result<bool>.Fail("Usuario ya existe");
             }
 
-            var (hash, salt, it) = _pwd.HashPassword(password);
-
+            var (hash, salt, it) = _pwd.HashPassword(request.Password);
             var user = new User
             {
-                Username = username,
-                Nombre = nombre,
+                Username = request.Username,
+                Email = request.Email,
+                Nombre = request.Nombre,
                 PasswordHash = hash,
                 PasswordSalt = salt,
                 Iterations = it,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                Role = role
+                Role = request.Role
             };
 
             await _repo.Create(user);
 
-            _logger.LogInformation("Registro exitoso para {Username} con el rol {Role} en {time}", username, role, DateTime.UtcNow);
+            _logger.LogInformation("Registro exitoso para {Username} con el rol {Role} en {time}", request.Username, request.Role, DateTime.UtcNow);
 
             return Result<bool>.Ok(true);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error no controlado durante el registro para {Username} en {time}", username, DateTime.UtcNow);
+            _logger.LogError(ex, "Error no controlado durante el registro para {Username} en {time}", request.Username, DateTime.UtcNow);
             throw;
         }
     }

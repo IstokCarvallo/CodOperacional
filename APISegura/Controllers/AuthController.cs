@@ -1,5 +1,6 @@
 ﻿using APISegura.Dtos.Auth;
 using APISegura.Services;
+using APISegura.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -10,16 +11,19 @@ using System.Security.Claims;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _authService;
+    private readonly IPasswordRecoveryService _passwordRecoveryService;
 
-    public AuthController(AuthService authService)
+    public AuthController(AuthService authService,
+        IPasswordRecoveryService passwordRecoveryService)
     {
         _authService = authService;
+        _passwordRecoveryService = passwordRecoveryService;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var result = await _authService.Register(request.Username, request.Password, request.Nombre, request.Role);
+        var result = await _authService.Register(request);
         if (!result.Success)
             return BadRequest(new { message = result.Error });
 
@@ -119,5 +123,29 @@ public class AuthController : ControllerBase
             return BadRequest(new { message = result.Error });
 
         return Ok(new { message = "Logout exitoso" });
+    }
+
+    [AllowAnonymous]
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
+    {
+        var result = await _passwordRecoveryService.ForgotPassword(req.Email);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
+    {
+        var result = await _passwordRecoveryService.ResetPassword(req.Token, req.NewPassword);
+
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
     }
 }

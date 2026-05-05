@@ -19,7 +19,7 @@ public class UserRepository : IUserRepository
         await conn.OpenAsync();
 
         var cmd = new SqlCommand(@"
-            SELECT Id, Username, Nombre,
+            SELECT Id, Username, Nombre, Email,
                     PasswordHash, PasswordSalt, Iterations, Role,
                     FailedAttempts, LockoutUntil, SecurityStamp
             FROM Users WHERE Username = @Username", conn);
@@ -31,16 +31,48 @@ public class UserRepository : IUserRepository
 
         return new User
         {
-            Id = r.GetInt32(0),
-            Username = r.GetString(1),
-            Nombre = r.GetString(2),
-            PasswordHash = r.GetString(3),
-            PasswordSalt = r.GetString(4),
-            Iterations = r.GetInt32(5),
-            Role = r.GetString(6),
-            FailedAttempts = r.GetInt32(7),
-            LockoutUntil = r.IsDBNull(8) ? null : r.GetDateTime(8),
-            SecurityStamp = r.GetString(9)
+            Id = r.GetInt32(r.GetOrdinal("Id")),
+            Username = r.GetString(r.GetOrdinal("Username")),
+            Nombre = r.GetString(r.GetOrdinal("Nombre")),
+            Email = r.GetString(r.GetOrdinal("Email")),
+            PasswordHash = r.GetString(r.GetOrdinal("PasswordHash")),
+            PasswordSalt = r.GetString(r.GetOrdinal("PasswordSalt")),
+            Iterations = r.GetInt32(r.GetOrdinal("Iterations")),
+            Role = r.GetString(r.GetOrdinal("Role")),
+            FailedAttempts = r.GetInt32(r.GetOrdinal("FailedAttempts")),
+            LockoutUntil = r.IsDBNull(r.GetOrdinal("LockoutUntil")) ? null : r.GetDateTime(r.GetOrdinal("LockoutUntil")),
+            SecurityStamp = r.GetString(r.GetOrdinal("SecurityStamp"))
+        };
+    }
+
+    public async Task<User?> GetByEmail(string email)
+    {
+        using var conn = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+        using var cmd = new SqlCommand(@"
+        SELECT TOP 1 *
+        FROM Users
+        WHERE Email = @Email", conn);
+
+        cmd.Parameters.AddWithValue("@Email", email);
+
+        await conn.OpenAsync();
+        using var reader = await cmd.ExecuteReaderAsync();
+
+        if (!reader.Read()) return null;
+
+        return new User
+        {
+            Id = (int)reader["Id"],
+            Username = reader["Username"].ToString(),
+            Email = reader["Email"]?.ToString(),
+            Nombre = reader["Nombre"].ToString(),
+            PasswordHash = reader["PasswordHash"].ToString(),
+            PasswordSalt = reader["PasswordSalt"].ToString(),
+            Iterations = (int)reader["Iterations"],
+            Role = reader["Role"].ToString(),
+            FailedAttempts = (int)reader["FailedAttempts"],
+            LockoutUntil = reader["LockoutUntil"] as DateTime?,
+            SecurityStamp = reader["SecurityStamp"].ToString()
         };
     }
 
@@ -50,7 +82,7 @@ public class UserRepository : IUserRepository
         await conn.OpenAsync();
 
         var cmd = new SqlCommand(@"
-        SELECT Id, Username, Nombre,
+        SELECT Id, Username, Nombre, Email,
             PasswordHash, PasswordSalt, Iterations, Role,
             FailedAttempts, LockoutUntil, SecurityStamp
         FROM Users WHERE Id = @Id", conn);
@@ -62,16 +94,17 @@ public class UserRepository : IUserRepository
 
         return new User
         {
-            Id = r.GetInt32(0),
-            Username = r.GetString(1),
-            Nombre = r.GetString(2),
-            PasswordHash = r.GetString(3),
-            PasswordSalt = r.GetString(4),
-            Iterations = r.GetInt32(5),
-            Role = r.GetString(6),
-            FailedAttempts = r.GetInt32(7),
-            LockoutUntil = r.IsDBNull(8) ? null : r.GetDateTime(8),
-            SecurityStamp = r.GetString(9)
+            Id = r.GetInt32(r.GetOrdinal("Id")),
+            Username = r.GetString(r.GetOrdinal("Username")),
+            Nombre = r.GetString(r.GetOrdinal("Nombre")),
+            Email = r.GetString(r.GetOrdinal("Email")),
+            PasswordHash = r.GetString(r.GetOrdinal("PasswordHash")),
+            PasswordSalt = r.GetString(r.GetOrdinal("PasswordSalt")),
+            Iterations = r.GetInt32(r.GetOrdinal("Iterations")),
+            Role = r.GetString(r.GetOrdinal("Role")),
+            FailedAttempts = r.GetInt32(r.GetOrdinal("FailedAttempts")),
+            LockoutUntil = r.IsDBNull(r.GetOrdinal("LockoutUntil")) ? null : r.GetDateTime(r.GetOrdinal("LockoutUntil")),
+            SecurityStamp = r.GetString(r.GetOrdinal("SecurityStamp"))
         };
     }
 
@@ -81,11 +114,12 @@ public class UserRepository : IUserRepository
         await conn.OpenAsync();
 
         var cmd = new SqlCommand(@"
-            INSERT INTO Users (Username, Nombre, PasswordHash, PasswordSalt, Iterations, Role, SecurityStamp)
-            VALUES (@Username, @Nombre, @PasswordHash, @PasswordSalt, @Iterations, @Role, @SecurityStamp);
+            INSERT INTO Users (Username, Email, Nombre, PasswordHash, PasswordSalt, Iterations, Role, SecurityStamp)
+            VALUES (@Username, @Email, @Nombre, @PasswordHash, @PasswordSalt, @Iterations, @Role, @SecurityStamp);
             SELECT SCOPE_IDENTITY();", conn);
 
         cmd.Parameters.AddWithValue("@Username", user.Username);
+        cmd.Parameters.AddWithValue("@Email", user.Email);
         cmd.Parameters.AddWithValue("@Nombre", user.Nombre);
         cmd.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
         cmd.Parameters.AddWithValue("@PasswordSalt", user.PasswordSalt);

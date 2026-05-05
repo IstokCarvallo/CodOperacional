@@ -1,7 +1,9 @@
+using APISegura.Common;
 using APISegura.Middleware;
 using APISegura.Repositories;
 using APISegura.Repositories.Interfaces;
 using APISegura.Services;
+using APISegura.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -20,6 +22,8 @@ builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IPlantaRepository, PlantaRepository>();
 builder.Services.AddScoped<ICuartelRepository, CuartelRepository>();
 builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
+builder.Services.AddScoped<IPasswordRecoveryService, PasswordRecoveryService>();
+builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
@@ -28,6 +32,10 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PlantaService>();
 builder.Services.AddScoped<CuartelService>();
 builder.Services.AddHttpContextAccessor();
+
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 // Serilog configuration
 Log.Logger = new LoggerConfiguration()
