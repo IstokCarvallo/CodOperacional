@@ -1,0 +1,35 @@
+﻿@using FrontCodOperacional.Services.UI
+
+@inject CurrentUserService UserService
+@inject IConfiguration Config
+
+<footer class="main-footer">
+    <div class="left">
+        <span>© @DateTime.Now.Year</span>
+        <span>· @environment</span>
+        <span>· v@version</span>
+    </div>
+
+    <div class="right">
+        <AuthorizeView>
+            <Authorized>
+                <span>@name (@role)</span>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+</footer>
+
+@code {
+    private string? name;
+    private string? role;
+    private string environment = "DEV";
+    private string version = "1.0.0";
+
+    protected override async Task OnInitializedAsync()
+    {
+        name = await UserService.GetName();
+        role = await UserService.GetRole();
+        environment = Config["Environment"] ?? "DEV";
+        version = Config["AppVersion"] ?? "1.0.0";
+    }
+}

@@ -9,7 +9,6 @@ namespace FrontCodOperacional.Services.Http
         private readonly NavigationManager _nav;
         private readonly ToastService _toast;
 
-
         public HttpErrorHandler(NavigationManager nav, ToastService toast)
         {
             _nav = nav;

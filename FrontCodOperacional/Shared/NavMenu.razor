@@ -1,17 +1,116 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
 
 <AuthorizeView>
-    <Authorized>
-        <ul>
-            <li><NavLink href="/">Inicio</NavLink></li>
-            <li><NavLink href="/planta">Plantas</NavLink></li>
-            <li><NavLink href="/cuartel">Cuerteles</NavLink></li>
-        </ul>
+    <Authorized Context="authState">
+
+        <nav class="nav-section" @(Collapsed ? "collapsed" : "" )">
+
+            <!-- GENERAL -->
+            <div class="nav-group">
+                <span class="nav-title">General</span>
+
+                <ul>
+                    <li>
+                        <NavLink href="/" Match="NavLinkMatch.All" class="nav-link"
+                                 title="Home" data-tooltip="Home">
+                            <span class="icon">🏠</span>
+                            @if (!Collapsed)
+                            {   
+                                <span>Inicio</span>
+                            }
+                        </NavLink>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- OPERACIÓN -->
+            <div class="nav-group">
+                <span class="nav-title">Operación</span>
+
+                <ul>
+                    <li>
+                        <NavLink href="/planta" Match="NavLinkMatch.Prefix" class="nav-link"
+                                 title="Plantas" data-tooltip="Plantas">
+                            <span class="icon">🌱</span>
+                            @if (!Collapsed)
+                            {
+                                <span>Plantas</span>
+                            }
+                        </NavLink>
+                    </li>
+
+                    <li>
+                        <NavLink href="/cuartel" Match="NavLinkMatch.Prefix" class="nav-link"
+                                 title="Cuarteles" data-tooltip="Cuarteles">
+                            <span class="icon">📍</span>
+                            @if (!Collapsed)
+                            {
+                                <span>Cuarteles</span>
+                            }
+                        </NavLink>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ADMIN -->
+            @if (authState.User.IsInRole("Admin"))
+            {
+                <div class="nav-group">
+                    <span class="nav-title">Administración</span>
+
+                    <ul>
+                        <li>
+                            <NavLink href="/usuarios" Match="NavLinkMatch.Prefix" class="nav-link"
+                                     title="Usuarios" data-tooltip="Usuarios">
+                                <span class="icon">👤</span>
+                                @if (!Collapsed)
+                                {
+                                <span>Usuarios</span>
+                                }
+                            </NavLink>
+                        </li>
+
+                        <li>
+                            <NavLink href="/auditoria" Match="NavLinkMatch.Prefix" class="nav-link"
+                                     title="Auditoria" data-tooltip="Auditoria">
+                                <span class="icon">📊</span>
+                                @if (!Collapsed)
+                                {
+                                <span>Auditoría</span>
+                                }
+                            </NavLink>
+                        </li>
+                    </ul>
+                </div>
+            }
+
+        </nav>
+
     </Authorized>
 
     <NotAuthorized>
-        <ul>
-            <li><NavLink href="/login">Login</NavLink></li>
-        </ul>
+        <nav class="nav-section">
+            <div class="nav-group">
+                <span class="nav-title">Acceso</span>
+
+                <ul>
+                    <li>
+                        <NavLink href="/login" Match="NavLinkMatch.All" class="nav-link"
+                                 title="Login" data-tooltip="Login">
+                            <span class="icon">🔐</span>
+
+                            @if (!Collapsed)
+                            {
+                                <span>Login</span>
+                            }
+                        </NavLink>
+                    </li>
+                </ul>
+            </div>
+        </nav>
     </NotAuthorized>
 </AuthorizeView>
+
+@code {
+    [Parameter] public bool Collapsed { get; set; }
+}

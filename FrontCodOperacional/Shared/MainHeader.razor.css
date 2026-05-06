@@ -1,0 +1,28 @@
+﻿.main-header {
+    height: 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid #e5e5e5;
+    background: #fff;
+}
+
+.brand {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-box {
+    text-align: right;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.user-meta {
+    font-size: 11px;
+    opacity: 0.7;
+}

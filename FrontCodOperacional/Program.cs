@@ -11,61 +11,38 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.RootComponents.Add<App>("#app");
 
-// Auth
 builder.Services.AddAuthorizationCore();
-
 builder.Services.AddScoped<CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
     sp.GetRequiredService<CustomAuthStateProvider>());
-
-// Storage
 builder.Services.AddScoped<TokenStorage>();
-
-// =========================
-// SERVICIOS TRANSVERSALES
-// =========================
 builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<CurrentUserService>();
+builder.Services.AddScoped<AuthMessageHandler>();
+builder.Services.AddScoped<HttpErrorHandler>();
 
-builder.Services.AddScoped<AuthMessageHandler>();   // JWT
-builder.Services.AddScoped<HttpErrorHandler>();     // Manejo errores + Toast
-
-
-// =========================
-// HTTP CLIENT PRINCIPAL (CON JWT + ERRORES)
-// =========================
 builder.Services.AddHttpClient("API", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7282/api/");
 })
-.AddHttpMessageHandler<AuthMessageHandler>()   // agrega token
-.AddHttpMessageHandler<HttpErrorHandler>();    // maneja errores + toast
+.AddHttpMessageHandler<HttpErrorHandler>()
+.AddHttpMessageHandler<AuthMessageHandler>(); 
 
-// 👉 ESTE es el HttpClient que usan TODOS los servicios
 builder.Services.AddScoped<HttpClient>(sp =>
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("API"));
 
-
-// =========================
-// HTTP CLIENT PARA AUTH (SIN HANDLERS)
-// =========================
 builder.Services.AddHttpClient("Auth", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7282/api/");
 });
 
-// AuthApiService usa cliente limpio
 builder.Services.AddScoped<AuthApiService>(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();
     return new AuthApiService(factory.CreateClient("Auth"));
 });
 
-
-// =========================
-// API SERVICES
-// =========================
 builder.Services.AddScoped<PlantasService>();
 builder.Services.AddScoped<CuartelesService>();
-
 
 await builder.Build().RunAsync();

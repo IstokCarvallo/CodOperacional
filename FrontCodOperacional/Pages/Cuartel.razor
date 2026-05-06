@@ -142,7 +142,6 @@
 
     void OnCodigoChange(ChangeEventArgs e)
     {
-        // 🔴 VALIDACIÓN CLAVE: SIEMPRE MAYÚSCULAS
         CodigoOperacional = e.Value?.ToString()?.ToUpper() ?? "";
     }
 
@@ -172,7 +171,6 @@
 
             await Service.UpdateCodigoOperacional(dto, CancellationToken.None);
 
-            // éxito
             Cuarteles = await Service.GetCuarteles(
                 ProductorSeleccionado.Value,
                 PredioSeleccionado.Value, CancellationToken.None);

@@ -132,9 +132,6 @@ else
 }
 
 @code {
-    // =========================
-    // ESTADO UI
-    // =========================
     private List<PlantaDto> Plantas = new();
     private PlantaDto? PlantaSeleccionada;
 
@@ -155,17 +152,11 @@ else
         CodigoOperacionalInput = e.Value?.ToString()?.ToUpper() ?? string.Empty;
     }
 
-    // =========================
-    // CICLO VIDA
-    // =========================
     protected override async Task OnInitializedAsync()
     {
         await Cargar();
     }
 
-    // =========================
-    // LISTADO
-    // =========================
     private async Task Cargar()
     {
         try

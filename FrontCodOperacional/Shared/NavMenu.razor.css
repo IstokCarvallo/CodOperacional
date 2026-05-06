@@ -1,0 +1,116 @@
+﻿.nav-section {
+    padding: 12px;
+}
+
+:host(.collapsed) .nav-title {
+    display: none;
+}
+
+:host(.collapsed) .nav-link {
+    justify-content: center;
+}
+
+.nav-section.collapsed .nav-title {
+    display: none;
+}
+
+.nav-section.collapsed .nav-link {
+    justify-content: center;
+}
+
+.nav-section.collapsed .nav-link span:last-child {
+    display: none;
+}
+
+.nav-link span:last-child {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-group {
+    margin-bottom: 18px;
+}
+
+.nav-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: block;
+    letter-spacing: 0.5px;
+}
+
+.nav-group ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-group li {
+    margin: 3px 0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #2c2c2c;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+
+.nav-link:hover {
+    background-color: #e9ecef;
+}
+
+
+.nav-link.active {
+    background-color: #0d6efd;
+    color: white;
+    font-weight: 500;
+}
+
+.icon {
+    width: 18px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.nav-link {
+    position: relative;
+}
+
+.nav-section.collapsed .nav-link::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.nav-section.collapsed .nav-link:hover::after {
+    opacity: 1;
+}
+
+.nav-section.collapsed .nav-link::after {
+    transform: translateY(-50%) translateX(-5px);
+}
+
+.nav-section.collapsed .nav-link:hover::after {
+    transform: translateY(-50%) translateX(0);
+}

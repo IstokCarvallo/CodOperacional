@@ -12,7 +12,6 @@ namespace FrontCodOperacional.Services.Api
         {
             _http = http;
         }
-        // 🔵 LOGIN 
         public async Task<LoginResponse?> Login(LoginRequest request)
         {
             var response = await _http.PostAsJsonAsync("auth/login", request);
@@ -22,7 +21,7 @@ namespace FrontCodOperacional.Services.Api
 
             return await response.Content.ReadFromJsonAsync<LoginResponse>();
         }
-        // 🔴 REFRESH TOKEN
+
         public async Task<LoginResponse?> Refresh(RefreshRequest request)
         {
             var response = await _http.PostAsJsonAsync("auth/refresh", request);
@@ -48,7 +47,6 @@ namespace FrontCodOperacional.Services.Api
             return response.IsSuccessStatusCode;
         }
 
-        // 🔴 LOGOUT
         public async Task<bool> Logout(RefreshRequest request)
         {
             var response = await _http.PostAsJsonAsync("auth/logout", request);

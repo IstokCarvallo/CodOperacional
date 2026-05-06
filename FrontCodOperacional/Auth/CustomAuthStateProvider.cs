@@ -73,7 +73,6 @@ namespace FrontCodOperacional.Auth
                 }
             }
 
-            // 🔵 Igual que antes
             var identity = new ClaimsIdentity(claims, "jwt");
 
             return new AuthenticationState(new ClaimsPrincipal(identity));

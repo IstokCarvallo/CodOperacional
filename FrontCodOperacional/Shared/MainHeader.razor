@@ -1,0 +1,30 @@
+﻿@using FrontCodOperacional.Services.UI
+
+@inject CurrentUserService UserService
+
+<header class="main-header">
+    <div class="left">
+        <span class="brand">Código Operacional</span>
+    </div>
+
+    <div class="right">
+        <AuthorizeView>
+            <Authorized>
+                <div class="user-box">
+                    <span>@name · @role</span>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </div>
+</header>
+
+@code {
+    private string? name;
+    private string? role;
+
+    protected override async Task OnInitializedAsync()
+    {
+        name = await UserService.GetName();
+        role = await UserService.GetRole();
+    }
+}
