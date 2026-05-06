@@ -1,17 +1,46 @@
 ﻿@using FrontCodOperacional.Services.UI
 
+@inject IJSRuntime JS
 @inject CurrentUserService UserService
+
 
 <header class="main-header">
     <div class="left">
-        <span class="brand">Código Operacional</span>
+        <button class="toggle-btn" @onclick="OnToggle">☰</button>
+        <span class="system-title">Código Operacional</span>
     </div>
 
     <div class="right">
+        <!-- BOTÓN TEMA -->
+        <button class="theme-btn" @onclick="ToggleTheme" title="Cambiar tema">
+            🌓
+        </button>
+
         <AuthorizeView>
             <Authorized>
-                <div class="user-box">
-                    <span>@name · @role</span>
+                <div class="user-menu" @ref="menuRef" @onclick="ToggleMenu">
+
+                    <span class="user-name">@name</span>
+
+                    <div class="dropdown @(open ? "show" : "")">
+
+                        <div class="dropdown-item">
+                            <strong>@name</strong>
+                        </div>
+
+                        <div class="dropdown-item small">
+                            @role
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item logout"
+                                @onclick="HandleLogout"
+                                @onclick:stopPropagation="true">
+                            Cerrar sesión
+                        </button>
+
+                    </div>
                 </div>
             </Authorized>
         </AuthorizeView>
@@ -19,12 +48,96 @@
 </header>
 
 @code {
+    [Parameter] public EventCallback OnToggle { get; set; }
+    [Parameter] public EventCallback OnLogout { get; set; }
+
+    [Inject] AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+
+
+    private bool open = false;
     private string? name;
     private string? role;
+    private string initials = "?";
+    private ElementReference menuRef;
 
     protected override async Task OnInitializedAsync()
     {
         name = await UserService.GetName();
         role = await UserService.GetRole();
+        initials = await UserService.GetInitials();
+        AuthStateProvider.AuthenticationStateChanged += AuthChangedHandler;
+    }
+
+    [JSInvokable]
+    public void CloseDropdown()
+    {
+        if (open)
+        {
+            open = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleMenu()
+    {
+        open = !open;
+    }
+
+    private async Task ToggleTheme()
+    {
+        await JS.InvokeVoidAsync("theme.toggle");
+    }
+
+    private async Task HandleLogout()
+    {
+        if (OnLogout.HasDelegate)
+            await OnLogout.InvokeAsync();
+    }
+
+    private void AuthChangedHandler(Task<AuthenticationState> task)
+    {
+        _ = HandleAuthChangedAsync(task);
+    }
+
+    // ✔ 3. MÉTODO REAL (ESTE ES EL QUE PREGUNTAS)
+    private async Task HandleAuthChangedAsync(Task<AuthenticationState> task)
+    {
+        var state = await task;
+
+        // 🔴 limpiar cache SIEMPRE
+        UserService.Clear();
+
+        if (state.User.Identity?.IsAuthenticated == true)
+        {
+            name = await UserService.GetName();
+            role = await UserService.GetRole();
+            initials = await UserService.GetInitials();
+        }
+        else
+        {
+            name = null;
+            role = null;
+            initials = "?";
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // ✔ LIMPIAR EVENTO (importante)
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= AuthChangedHandler;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync(
+                "dropdown.init",
+                ".user-menu",
+                DotNetObjectReference.Create(this)
+            );
+        }
     }
 }

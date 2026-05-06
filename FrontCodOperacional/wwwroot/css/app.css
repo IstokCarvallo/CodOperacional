@@ -1,3 +1,63 @@
+:root {
+    --font-base: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    /* Escala tipográfica */
+    --text-xs: 12px;
+    --text-sm: 13px;
+    --text-base: 14px;
+    --text-md: 16px;
+    --text-lg: 18px;
+    --text-xl: 20px;
+    /* Pesos */
+    --fw-normal: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+}
+
+body {
+    font-family: var(--font-base);
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: #1f2937; /* gris oscuro moderno */
+    background-color: #f9fafb;
+}
+
+h1 {
+    font-size: var(--text-xl);
+    font-weight: var(--fw-bold);
+}
+
+h2 {
+    font-size: var(--text-lg);
+    font-weight: var(--fw-semibold);
+}
+
+h3 {
+    font-size: var(--text-md);
+    font-weight: var(--fw-semibold);
+}
+
+p, span, li {
+    font-size: var(--text-base);
+    font-weight: var(--fw-normal);
+}
+
+.small {
+    font-size: var(--text-sm);
+    color: #6b7280;
+}
+
+button {
+    font-family: var(--font-base);
+    font-size: var(--text-sm);
+    font-weight: var(--fw-medium);
+}
+
+input {
+    font-family: var(--font-base);
+    font-size: var(--text-sm);
+}
+
 .valid.modified:not([type=checkbox]) {
     outline: 1px solid #26b050;
 }

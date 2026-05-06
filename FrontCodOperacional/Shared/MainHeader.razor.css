@@ -1,28 +1,76 @@
 ﻿.main-header {
-    height: 56px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 16px;
-    border-bottom: 1px solid #e5e5e5;
-    background: #fff;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
 }
 
-.brand {
-    font-weight: 600;
-    font-size: 14px;
+.left {
+    display: flex;
+    align-items: center;
 }
 
-.user-box {
-    text-align: right;
+.right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.user-name {
-    font-weight: 600;
-    font-size: 13px;
+.toggle-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
 }
 
-.user-meta {
-    font-size: 11px;
-    opacity: 0.7;
+.theme-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.user-menu {
+    position: relative;
+    cursor: pointer;
+}
+
+.dropdown {
+    position: absolute;
+    right: 0;
+    top: 120%;
+    min-width: 180px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: none;
+    z-index: 2000;
+}
+
+    .dropdown.show {
+        display: block;
+    }
+
+.dropdown-item {
+    padding: 8px 12px;
+}
+
+    .dropdown-item.small {
+        font-size: 12px;
+        opacity: 0.7;
+    }
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 5px 0;
+}
+
+.logout {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
 }

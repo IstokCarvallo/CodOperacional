@@ -17,9 +17,14 @@ namespace FrontCodOperacional.Auth
         {
             await _storage.SetToken(token);
 
-            var authState = await GetAuthenticationStateAsync();
+            var claims = ParseClaimsFromJwt(token).ToList();
 
-            NotifyAuthenticationStateChanged(Task.FromResult(authState));
+            var identity = new ClaimsIdentity(claims, "jwt");
+            var user = new ClaimsPrincipal(identity);
+
+            NotifyAuthenticationStateChanged(
+                Task.FromResult(new AuthenticationState(user))
+            );
         }
 
         public async Task Logout()

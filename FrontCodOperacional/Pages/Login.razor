@@ -39,6 +39,7 @@
         }
 
         await _storage.SetTokens(result.AccessToken, result.RefreshToken);
+        await AuthProvider.SetToken(result.AccessToken);
 
         await AuthProvider.SetToken(result.AccessToken);
 

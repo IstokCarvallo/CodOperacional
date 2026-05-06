@@ -1,39 +1,24 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@using System.Security.Claims;
+﻿@using FrontCodOperacional.Services.UI
 @using FrontCodOperacional.Models.Auth
 
 @inject Services.Api.AuthApiService _authApi
 @inject Auth.CustomAuthStateProvider AuthProvider
+@inject CurrentUserService UserService
 @inject NavigationManager Nav
 @inject Auth.TokenStorage _storage
 @inject IJSRuntime JS
 
 @inherits LayoutComponentBase
 
-<div class="layout @(collapsed ? "collapsed" : "")">
+<div class="layout @(collapsed ? "collapsed" : "") @(mobileOpen ? "mobile-open" : "")">
+    <div class="overlay" @onclick="CloseSidebarMobile" OnLogout="CerrarSesion"></div>
     <aside class="sidebar">
-        <div class="sidebar-header">
-            <button class="toggle-btn" @onclick="ToggleSidebar">
-                ☰
-            </button>
-        </div>
-
         <NavMenu Collapsed="collapsed" />
     </aside>
 
     <main class="content">
 
-        <MainHeader />
-
-        <div class="topbar">
-            <AuthorizeView>
-                <Authorized>
-                    <button class="logout-btn" @onclick="CerrarSesion">
-                        Cerrar sesión
-                    </button>
-                </Authorized>
-            </AuthorizeView>
-        </div>
+        <MainHeader OnToggle="ToggleSidebar" OnLogout="CerrarSesion" />
 
         <div class="workspace">
             <Toast />
@@ -46,17 +31,41 @@
 
 @code {
     private bool collapsed = false;
+    private bool mobileOpen;
 
     protected override async Task OnInitializedAsync()
     {
         var value = await JS.InvokeAsync<string>("localStorage.getItem", "sidebar");
         collapsed = value == "true";
+
+        Nav.LocationChanged += (_, __) =>
+        {
+            mobileOpen = false;
+            StateHasChanged();
+        };
+
+
+        await JS.InvokeVoidAsync("theme.load");
+    }
+
+    private void CloseSidebarMobile()
+    {
+        mobileOpen = false;
     }
 
     private async Task ToggleSidebar()
     {
-        collapsed = !collapsed;
-        await JS.InvokeVoidAsync("localStorage.setItem", "sidebar", collapsed);
+        var isMobile = await JS.InvokeAsync<bool>("layoutUtils.isMobile");
+
+        if (isMobile)
+        {
+            mobileOpen = !mobileOpen;  
+        }
+        else
+        {
+            collapsed = !collapsed;    
+            await JS.InvokeVoidAsync("localStorage.setItem", "sidebar", collapsed);
+        }
     }
 
     private async Task CerrarSesion()
@@ -71,9 +80,8 @@
             });
         }
 
-        // 🔴 luego limpiar cliente
         await AuthProvider.Logout();
-
+        UserService.Clear();
         Nav.NavigateTo("/login", true);
     }
 }

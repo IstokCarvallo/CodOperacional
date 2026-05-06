@@ -1,0 +1,14 @@
+﻿:root {
+    --bg: #ffffff;
+    --text: #1a1a1a;
+    --sidebar-bg: #f4f6f9;
+    --workspace-bg: #f6f7fb;
+    --border: #ddd;
+}
+[data-theme="dark"] {
+    --bg: #121212;
+    --text: #eaeaea;
+    --sidebar-bg: #1e1e1e;
+    --workspace-bg: #181818;
+    --border: #333;
+}

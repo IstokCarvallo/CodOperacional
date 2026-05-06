@@ -1,10 +1,8 @@
 ﻿.main-footer {
-    height: 40px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    border-top: 1px solid #e5e5e5;
+    padding: 8px 16px;
     font-size: 12px;
-    background: #fafafa;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
 }
