@@ -1,4 +1,5 @@
 ﻿@page "/login"
+
 @using FrontCodOperacional.Services.Api
 @using FrontCodOperacional.Auth
 @using FrontCodOperacional.Models.Auth
@@ -8,41 +9,186 @@
 @inject NavigationManager Nav
 @inject TokenStorage _storage
 
-<h3>Login</h3>
+<div class="login-container">
+    <!-- PANEL IZQUIERDO -->
+    <div class="login-side">
+        <div class="brand">
+            <div class="brand-logo">
+                <i class="fa-solid fa-code"></i>
+            </div>
 
-<input @bind="usuario" placeholder="Usuario" />
-<input @bind="password" type="password" placeholder="Password" />
+            <div class="brand-text">
+                <h1>
+                    Código Operacional
+                </h1>
+                <p>
+                    Plataforma de gestión Códigos operacional y administrativa.
+                </p>
+            </div>
+        </div>
 
-<button @onclick="EjecutarLogin">Ingresar</button>
+        <div class="side-content">
+            <h2>
+                Control centralizado para operaciones modernas
+            </h2>
 
-<p>@mensaje</p>
+            <p>
+                Administra procesos, usuarios, auditoría y operaciones desde una plataforma segura y escalable.
+            </p>
 
-<NavLink href="/forgotpassword">¿Olvidaste tu contraseña?</NavLink>
+            <div class="features">
+                <div class="feature-item">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Autenticación segura JWT</span>
+                </div>
 
-@code { 
-    string usuario = "";
-    string password = "";
-    string mensaje = "";
+                <div class="feature-item">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Monitoreo operacional</span>
+                </div>
 
-    async Task EjecutarLogin()
+                <div class="feature-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Gestión de usuarios y permisos</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL LOGIN -->
+
+    <div class="login-panel">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+
+                <h1>
+                    Iniciar sesión
+                </h1>
+
+                <p>
+                    Ingresa tus credenciales para continuar.
+                </p>
+            </div>
+
+            <!-- USER -->
+
+            <div class="form-group">
+                <label>
+                    Usuario
+                </label>
+
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-user"></i>
+                    <input @bind="usuario" placeholder="Usuario" />
+                </div>
+            </div>
+
+            <!-- PASSWORD -->
+
+            <div class="form-group">
+                <label>
+                    Contraseña
+                </label>
+
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+
+                    <input @bind="password"
+                           type="password"
+                           placeholder="Contraseña" />
+
+                </div>
+            </div>
+
+            <!-- BUTTON -->
+
+            <button class="login-btn"
+                    @onclick="EjecutarLogin"
+                    disabled="@loading">
+                @if (loading)
+                {
+                    <span>
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        Ingresando...
+                    </span>
+                }
+                else
+                {
+                    <span>
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        Ingresar
+                    </span>
+                }
+
+            </button>
+
+            <!-- MESSAGE -->
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <div class="message error">
+
+                    <i class="fa-solid fa-circle-exclamation"></i>
+
+                    <span>@mensaje</span>
+
+                </div>
+            }
+
+            <!-- LINKS -->
+
+            <div class="login-footer">
+                <NavLink href="/forgotpassword"
+                         class="forgot-link">
+
+                    ¿Olvidaste tu contraseña?
+
+                </NavLink>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string usuario = "";
+    private string password = "";
+    private string mensaje = "";
+    private bool loading;
+
+    private async Task EjecutarLogin()
     {
-        var result = await AuthApi.Login(new LoginRequest
-        {
-            Usuario = usuario,
-            Password = password
-        });
+        mensaje = "";
+        loading = true;
 
-        if (result == null)
+        try
         {
-            mensaje = "Credenciales inválidas";
-            return;
+            var result = await AuthApi.Login(
+                new LoginRequest
+                {
+                    Usuario = usuario,
+                    Password = password
+                });
+
+            if (result == null)
+            {
+                mensaje = "Credenciales inválidas.";
+                return;
+            }
+
+            await _storage.SetTokens(
+                result.AccessToken,
+                result.RefreshToken);
+
+            await AuthProvider.SetToken(
+                result.AccessToken);
+
+            Nav.NavigateTo("/");
         }
-
-        await _storage.SetTokens(result.AccessToken, result.RefreshToken);
-        await AuthProvider.SetToken(result.AccessToken);
-
-        await AuthProvider.SetToken(result.AccessToken);
-
-        Nav.NavigateTo("/");
+        finally
+        {
+            loading = false;
+        }
     }
 }

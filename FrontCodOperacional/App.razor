@@ -1,18 +1,26 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
+﻿@inject NavigationManager Nav
+@using Microsoft.AspNetCore.Components.Authorization
 
 <CascadingAuthenticationState>
     <CustomErrorBoundary>
         <Router AppAssembly="@typeof(App).Assembly">
-            <Found Context="routeData">
+            <Found Context="routeData">                
                 <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <Authorizing>
+                        <div class="auth-loading">
+                            Validando sesión...
+                        </div>
+                    </Authorizing>
                     <NotAuthorized Context="authContext">
-                        @if (!authContext.User.Identity?.IsAuthenticated ?? true)
+                        @if (authContext.User.Identity?.IsAuthenticated != true)
                         {
-                            <RedirectToLogin />
+                            Nav.NavigateTo("/login");
                         }
                         else
                         {
-                            <p>No tienes permisos</p>
+                            <LayoutView Layout="@typeof(MainLayout)">
+                                <AccessDenied />
+                            </LayoutView>
                         }
                     </NotAuthorized>
                 </AuthorizeRouteView>
@@ -20,7 +28,7 @@
 
             <NotFound>
                 <LayoutView Layout="@typeof(MainLayout)">
-                    <p>Página no encontrada</p>
+                    <NotFoundPage />
                 </LayoutView>
             </NotFound>
         </Router>

@@ -1,0 +1,153 @@
+﻿.notfound-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: linear-gradient( 180deg, var(--workspace-bg), var(--bg-main) );
+}
+
+/* =========================================
+   CARD
+========================================= */
+
+.notfound-card {
+    width: 100%;
+    max-width: 560px;
+    padding: 48px;
+    border-radius: 28px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-soft);
+    text-align: center;
+    transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+/* =========================================
+   ICON
+========================================= */
+
+.notfound-icon {
+    width: 92px;
+    height: 92px;
+    margin: 0 auto 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient( 135deg, rgba(239,68,68,0.18), rgba(239,68,68,0.10) );
+    color: var(--danger);
+    font-size: 36px;
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.status-code {
+    display: inline-block;
+    margin-bottom: 10px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: rgba(79,70,229,0.10);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: var(--fw-bold);
+    letter-spacing: 1px;
+}
+
+.notfound-content h1 {
+    margin: 0 0 14px;
+    font-size: 36px;
+    line-height: 1.1;
+    color: var(--text-main);
+}
+
+.notfound-content p {
+    margin: 0 auto;
+    max-width: 420px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    font-size: var(--text-md);
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.notfound-actions {
+    margin-top: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+/* PRIMARY */
+
+.primary-btn {
+    height: 48px;
+    padding: 0 22px;
+    border: none;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient( 135deg, var(--primary), var(--primary-hover) );
+    color: white;
+    font-size: var(--text-sm);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+    .primary-btn:hover {
+        transform: translateY(-1px);
+    }
+
+/* SECONDARY */
+
+.secondary-btn {
+    height: 48px;
+    padding: 0 22px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--text-sm);
+    font-weight: var(--fw-medium);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+    .secondary-btn:hover {
+        background: var(--hover-bg);
+    }
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 640px) {
+
+    .notfound-card {
+        padding: 34px 24px;
+    }
+
+    .notfound-content h1 {
+        font-size: 28px;
+    }
+
+    .notfound-actions {
+        flex-direction: column;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

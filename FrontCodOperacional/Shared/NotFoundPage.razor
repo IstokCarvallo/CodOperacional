@@ -1,0 +1,55 @@
+﻿
+@inject NavigationManager Nav
+
+@inject IJSRuntime JS
+
+<div class="notfound-container">
+    <div class="notfound-card">
+        <!-- ICON -->
+        <div class="notfound-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="notfound-content">
+            <span class="status-code">
+                404
+            </span>
+
+            <h1>
+                Página no encontrada
+            </h1>
+
+            <p>
+                La página que intentas abrir no existe, fue movida o no está disponible.
+            </p>
+        </div>
+
+        <!-- ACTIONS -->
+
+        <div class="notfound-actions">
+            <button class="primary-btn" @onclick="GoHome">
+                <i class="fa-solid fa-house"></i>
+                Ir al inicio
+            </button>
+
+            <button class="secondary-btn" @onclick="GoBack">
+                <i class="fa-solid fa-arrow-left"></i>
+                Volver
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private void GoHome()
+    {
+        Nav.NavigateTo("/");
+    }
+
+    private async Task GoBack()
+    {
+        await JS.InvokeVoidAsync("navigationHelper.back");
+    }
+}

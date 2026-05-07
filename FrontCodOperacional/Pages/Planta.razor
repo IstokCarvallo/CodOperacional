@@ -1,131 +1,253 @@
 ﻿@page "/planta"
 @attribute [Authorize]
 
-@using System.Net
-@using System.Net.Http.Json
 @using FrontCodOperacional.Models.Planta
 @using FrontCodOperacional.Services.Api
 
 @inject PlantasService PlantasService
 @inject NavigationManager Nav
 
-<h3>Asignar Código Operacional</h3>
+<PageTitle>Plantas | Código Operacional</PageTitle>
 
-@if (!string.IsNullOrWhiteSpace(Mensaje))
-{
-    <div class="alert alert-info mt-2">@Mensaje</div>
-}
+<div class="page-container">
+    <!-- HEADER -->
+    <div class="page-header">
+        <div>
+            <div class="page-badge">
+                <i class="fa-solid fa-industry"></i>
+                Operación
+            </div>
 
-<!-- Listado -->
-@if (IsLoading)
-{
-    <p>Cargando...</p>
-}
-else
-{
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Cod. Operacional</th>
-                <th>F. Actualización</th>
-                <th style="width:160px;"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Plantas.Count == 0)
-            {
-                <tr><td colspan="4">Sin resultados</td></tr>
-            }
-            else
-            {
-                @foreach (var p in Plantas)
-                {
-                    <tr style="cursor:pointer" @onclick="() => AbrirModal(p)">
-                        <td>@p.Codigo</td>
-                        <td>@p.Nombre</td>
-                        <td>@p.CodigoOperacional</td>
-                        <td>
-                            @(p.FechaUltimaActualizacion.HasValue
-                                ? p.FechaUltimaActualizacion.Value.ToString("dd-MM-yyyy HH:mm")
-                                : "-")
-                        </td>
-                    </tr>
-                }
-            }
-        </tbody>
-    </table>
+            <h1>
+                Plantas / Packing
+            </h1>
 
-    <!-- Paginación -->
-    <div class="d-flex justify-content-between">
-        <button class="btn btn-secondary"
-                @onclick="Anterior"
-                disabled="@(PageNumber == 1 || IsLoading)">
-            Anterior
-        </button>
+            <p>
+                Administración y asignación de códigos operacionales.
+            </p>
+        </div>
 
-        <span>Página @PageNumber</span>
+        <div class="header-actions">
+            <div class="records-card">
+                <span class="label">
+                    Registros
+                </span>
 
-        <button class="btn btn-secondary"
-                @onclick="Siguiente"
-                disabled="@(PageNumber * PageSize >= TotalRecords || IsLoading)">
-            Siguiente
-        </button>
+                <strong>
+                    @TotalRecords
+                </strong>
+            </div>
+        </div>
     </div>
-}
 
-<!-- Modal -->
-@if (MostrarModal && PlantaSeleccionada != null)
-{
-    <div class="modal fade show d-block" style="background-color:rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-            <div class="modal-content">
+    <!-- ALERT -->
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="message-banner">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>@Mensaje</span>
+        </div>
+    }
 
-                <div class="modal-header">
-                    <h5 class="modal-title">Asignar Código Operacional</h5>
-                    <button class="btn-close" @onclick="CerrarModal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div><strong>Código:</strong> @PlantaSeleccionada.Codigo</div>
-                    <div><strong>Nombre:</strong> @PlantaSeleccionada.Nombre</div>
-                    <div class="mt-2">
-                        <strong>Última actualización:</strong>
-                        @(PlantaSeleccionada.FechaUltimaActualizacion.HasValue
-                            ? PlantaSeleccionada.FechaUltimaActualizacion.Value.ToString("dd-MM-yyyy HH:mm")
-                            : "Sin registro")
-                    </div>
-
-                    <input class="form-control mt-3"
-                           style="text-transform: uppercase;"
-                           placeholder="Ingrese código operacional"
-                           value="@CodigoOperacionalInput"
-                           @oninput="OnCodigoChange" />
-                </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-secondary"
-                            @onclick="CerrarModal"
-                            disabled="@Guardando">
-                        Cancelar
-                    </button>
-
-                    <button class="btn btn-success"
-                            @onclick="GuardarCodigo"
-                            disabled="@Guardando">
-
-                        @if (Guardando)
+    <!-- TABLE CARD -->
+    <div class="table-card">
+        <!-- LOADING -->
+        @if (IsLoading)
+        {
+            <div class="loading-state">
+                <div class="loader"></div>
+                <span>Cargando información...</span>
+            </div>
+        }
+        else
+        {
+            <!-- TABLE -->
+            <div class="table-wrapper">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Cod. Operacional</th>
+                            <th>Última actualización</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Plantas.Count == 0)
                         {
-                            <span class="spinner-border spinner-border-sm"></span>
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="fa-regular fa-folder-open"></i>
+                                        <span>
+                                            No existen registros.
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
                         }
                         else
                         {
-                            <span>Guardar</span>
+                            @foreach (var p in Plantas)
+                            {
+                                <tr @onclick="() => AbrirModal(p)">
+                                    <td>
+                                        <span class="table-code">
+                                            @p.Codigo
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @p.Nombre
+                                    </td>
+
+                                    <td>
+
+                                        @if (string.IsNullOrWhiteSpace(p.CodigoOperacional))
+                                        {
+                                            <span class="empty-badge">
+                                                Sin asignar
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="code-badge">
+                                                @p.CodigoOperacional
+                                            </span>
+                                        }
+
+                                    </td>
+
+                                    <td>
+
+                                        @(p.FechaUltimaActualizacion.HasValue
+                                            ? p.FechaUltimaActualizacion.Value.ToString("dd-MM-yyyy HH:mm")
+                                            : "-")
+
+                                    </td>
+                                </tr>
+                            }
                         }
-                    </button>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="table-footer">
+                <button class="pagination-btn"
+                        @onclick="Anterior"
+                        disabled="@(PageNumber == 1 || IsLoading)">
+
+                    <i class="fa-solid fa-chevron-left"></i>
+                    Anterior
+                </button>
+
+                <div class="page-indicator">
+                    Página
+                    <strong>@PageNumber</strong>
                 </div>
 
+                <button class="pagination-btn"
+                        @onclick="Siguiente"
+                        disabled="@(PageNumber * PageSize >= TotalRecords || IsLoading)">
+                    Siguiente
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- MODAL -->
+@if (MostrarModal && PlantaSeleccionada != null){
+    <div class="modal-overlay">
+        <div class="modern-modal">
+            <!-- HEADER -->
+            <div class="modal-header">
+                <div>
+                    <h2>
+                        Código Operacional
+                    </h2>
+
+                    <p>
+                        Actualización de planta operacional.
+                    </p>
+                </div>
+
+                <button class="close-btn" @onclick="CerrarModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <span>Código</span>
+                        <strong>
+                            @PlantaSeleccionada.Codigo
+                        </strong>
+                    </div>
+
+                    <div class="detail-item">
+                        <span>Nombre</span>
+                        <strong>
+                            @PlantaSeleccionada.Nombre
+                        </strong>
+                    </div>
+                </div>
+                <div class="detail-date">
+                    <span>
+                        Última actualización:
+                    </span>
+                    <strong>
+                        @(PlantaSeleccionada.FechaUltimaActualizacion.HasValue
+                            ? PlantaSeleccionada.FechaUltimaActualizacion.Value.ToString("dd-MM-yyyy HH:mm")
+                            : "Sin registro")
+                    </strong>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Código operacional
+                    </label>
+
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-barcode"></i>
+                        <input placeholder="Ingrese código operacional"
+                               value="@CodigoOperacionalInput"
+                               @oninput="OnCodigoChange" />
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+                <button class="secondary-btn"
+                        @onclick="CerrarModal"
+                        disabled="@Guardando">
+                    Cancelar
+                </button>
+
+                <button class="primary-btn"
+                        @onclick="GuardarCodigo"
+                        disabled="@Guardando">
+                    @if (Guardando)
+                    {
+                        <span>
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            Guardando...
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Guardar
+                        </span>
+                    }
+                </button>
             </div>
         </div>
     </div>
@@ -164,7 +286,10 @@ else
             IsLoading = true;
             Mensaje = null;
 
-            var data = await PlantasService.GetPaged(PageNumber, PageSize, CancellationToken.None);
+            var data = await PlantasService.GetPaged(
+                PageNumber,
+                PageSize,
+                CancellationToken.None);
 
             if (data != null)
             {
@@ -192,6 +317,7 @@ else
             return;
 
         PageNumber++;
+
         await Cargar();
     }
 
@@ -201,30 +327,31 @@ else
             return;
 
         PageNumber--;
+
         await Cargar();
     }
 
-    // =========================
-    // MODAL
-    // =========================
     private void AbrirModal(PlantaDto planta)
     {
         PlantaSeleccionada = planta;
-        CodigoOperacionalInput = planta.CodigoOperacional ?? string.Empty;
+
+        CodigoOperacionalInput =
+            planta.CodigoOperacional ?? string.Empty;
+
         MostrarModal = true;
+
         Mensaje = null;
     }
 
     private void CerrarModal()
     {
         MostrarModal = false;
+
         PlantaSeleccionada = null;
+
         CodigoOperacionalInput = string.Empty;
     }
 
-    // =========================
-    // GUARDADO
-    // =========================
     private async Task GuardarCodigo()
     {
         if (PlantaSeleccionada == null)
@@ -239,22 +366,27 @@ else
         try
         {
             Guardando = true;
+
             Mensaje = null;
 
             await PlantasService.ActualizarCodigo(
-            new ActualizarCodigoOperacionalRequest
-            {
-                Codigo = PlantaSeleccionada.Codigo,
-                CodigoOperacional = CodigoOperacionalInput
-            }, CancellationToken.None);
+                new ActualizarCodigoOperacionalRequest
+                {
+                    Codigo = PlantaSeleccionada.Codigo,
+                    CodigoOperacional = CodigoOperacionalInput
+                },
+                CancellationToken.None);
 
             CerrarModal();
+
             await Cargar();
+
             Mensaje = "Actualización correcta.";
         }
         catch (Exception ex)
         {
             Mensaje = ex.Message;
+
             Nav.NavigateTo("/login");
         }
         finally

@@ -4,24 +4,80 @@
 @inject IConfiguration Config
 
 <footer class="main-footer">
-    <div class="left">
-        <span>© @DateTime.Now.Year</span>
-        <span>· @environment</span>
-        <span>· v@version</span>
+
+    <!-- LEFT -->
+    <div class="footer-left">
+
+        <div class="footer-brand">
+
+            <i class="fa-solid fa-code"></i>
+
+            <span class="brand-name">
+                Código Operacional
+            </span>
+
+        </div>
+
+        <div class="footer-meta">
+
+            <span>
+                © @DateTime.Now.Year
+            </span>
+
+            <span class="dot"></span>
+
+            <span class="env-badge">
+                @environment
+            </span>
+
+            <span class="dot"></span>
+
+            <span class="version">
+                v@version
+            </span>
+
+        </div>
+
     </div>
 
-    <div class="right">
+    <!-- RIGHT -->
+    <div class="footer-right">
+
         <AuthorizeView>
             <Authorized>
-                <span>@name (@role)</span>
+
+                <div class="footer-user">
+
+                    <div class="footer-avatar">
+                        @GetInitials(name)
+                    </div>
+
+                    <div class="footer-user-info">
+
+                        <span class="footer-user-name">
+                            @name
+                        </span>
+
+                        <span class="footer-user-role">
+                            @role
+                        </span>
+
+                    </div>
+
+                </div>
+
             </Authorized>
         </AuthorizeView>
+
     </div>
+
 </footer>
 
 @code {
+
     private string? name;
     private string? role;
+
     private string environment = "DEV";
     private string version = "1.0.0";
 
@@ -29,7 +85,23 @@
     {
         name = await UserService.GetName();
         role = await UserService.GetRole();
+
         environment = Config["Environment"] ?? "DEV";
         version = Config["AppVersion"] ?? "1.0.0";
+    }
+
+    private string GetInitials(string? fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return "?";
+
+        var parts = fullName.Split(' ',
+            StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 1)
+            return parts[0][0].ToString().ToUpper();
+
+        return $"{parts[0][0]}{parts[1][0]}"
+            .ToUpper();
     }
 }

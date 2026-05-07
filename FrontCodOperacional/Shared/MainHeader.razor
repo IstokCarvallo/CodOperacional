@@ -6,40 +6,83 @@
 
 <header class="main-header">
     <div class="left">
-        <button class="toggle-btn" @onclick="OnToggle">☰</button>
+        <button class="toggle-btn" @onclick="OnToggle"><i class="fa-solid fa-bars"></i></button>
         <span class="system-title">Código Operacional</span>
     </div>
 
     <div class="right">
         <!-- BOTÓN TEMA -->
         <button class="theme-btn" @onclick="ToggleTheme" title="Cambiar tema">
-            🌓
+            <i class="fa-regular fa-moon"></i>
         </button>
 
         <AuthorizeView>
             <Authorized>
-                <div class="user-menu" @ref="menuRef" @onclick="ToggleMenu">
+                <div class="user-menu" @ref="menuRef">
 
-                    <span class="user-name">@name</span>
+                    <!-- BOTÓN USUARIO -->
+                    <button class="user-trigger" @onclick="ToggleMenu">
 
+                        <div class="avatar">
+                            @initials
+                        </div>
+
+                        <div class="user-meta">
+                            <span class="user-name">
+                                @name
+                            </span>
+
+                            <span class="user-role">
+                                @role
+                            </span>
+                        </div>
+
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </button>
+
+                    <!-- DROPDOWN -->
                     <div class="dropdown @(open ? "show" : "")">
 
-                        <div class="dropdown-item">
-                            <strong>@name</strong>
+                        <div class="dropdown-header">
+
+                            <div class="avatar large">
+                                @initials
+                            </div>
+
+                            <div class="dropdown-user-info">
+
+                                <div class="dropdown-name">
+                                    @name
+                                </div>
+
+                                <div class="dropdown-role">
+                                    @role
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="dropdown-item small">
-                            @role
-                        </div>
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item">
+                            <i class="fa-regular fa-user"></i>
+                            <span>Mi Perfil</span>
+                        </button>
+
+                        <button class="dropdown-item">
+                            <i class="fa-solid fa-gear"></i>
+                            <span>Configuración</span>
+                        </button>
 
                         <div class="dropdown-divider"></div>
 
                         <button class="dropdown-item logout"
                                 @onclick="HandleLogout"
                                 @onclick:stopPropagation="true">
-                            Cerrar sesión
-                        </button>
 
+                            <i class="fa-solid fa-right-from-bracket"></i>
+
+                            <span>Cerrar sesión</span>
+                        </button>
                     </div>
                 </div>
             </Authorized>

@@ -1,0 +1,52 @@
+﻿@inject NavigationManager Nav
+
+@inject IJSRuntime JS
+
+<div class="access-container">
+    <div class="access-card">
+        <!-- ICON -->
+        <div class="access-icon">
+            <i class="fa-solid fa-ban"></i>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="access-content">
+            <span class="status-badge">
+                403
+            </span>
+
+            <h1>
+                Acceso denegado
+            </h1>
+
+            <p>
+                No tienes permisos suficientes para acceder a esta sección del sistema.
+            </p>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="access-actions">
+            <button class="primary-btn" @onclick="GoHome">
+                <i class="fa-solid fa-house"></i>
+                Ir al inicio
+            </button>
+
+            <button class="secondary-btn" @onclick="GoBack">
+                <i class="fa-solid fa-arrow-left"></i>
+                Volver
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void GoHome()
+    {
+        Nav.NavigateTo("/");
+    }
+
+    private async Task GoBack()
+    {
+        await JS.InvokeVoidAsync("navigationHelper.back");
+    }
+}

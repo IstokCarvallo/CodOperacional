@@ -1,82 +1,227 @@
 ﻿@page "/cuartel"
 @attribute [Authorize]
+
 @using FrontCodOperacional.Models.Cuartel
 @using FrontCodOperacional.Services.Api
 
 @inject CuartelesService Service
 
-@page "/cuartel-actualizar"
-@attribute [Authorize]
+<PageTitle>Cuarteles | Código Operacional</PageTitle>
 
-@inject CuartelesService Service
+<div class="page-container">
+    <!-- HEADER -->
+    <div class="page-header">
+        <div>
+            <div class="page-badge">
+                <i class="fa-solid fa-location-dot"></i>
+                Operación Agrícola
+            </div>
 
-<h3>Cuarteles</h3>
+            <h1>
+                Cuarteles
+            </h1>
 
-<!-- PRODUCTOR -->
-<SearchSelect TItem="ProductorDto"
-              Placeholder="Buscar productor..."
-              SearchMethod="BuscarProductores"
-              ItemText="@(p => $"{p.Codigo} - {p.Nombre}")"
-              OnSelected="OnProductorSeleccionado" />
+            <p>
+                Asignación y administración de códigos operacionales por productor y predio.
+            </p>
+        </div>
 
-<!-- PREDIO -->
-@if (ProductorSeleccionado.HasValue)
-{
-    <SearchSelect TItem="PredioDto"
-                    Placeholder="Buscar predio..."
-                    SearchMethod="BuscarPredios"
-                    ItemText="@(p => $"{p.Codigo} - {p.Nombre}")"
-                    OnSelected="OnPredioSeleccionado" />
-}
+        <div class="records-card">
+            <span class="label">
+                Registros
+            </span>
 
-<!-- TABLA CUARTELES -->
-@if (Cuarteles.Any())
-{
-    <table class="table table-hover">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Nombre</th>
-                <th>Código Operacional</th>
-                <th>Última Actualización</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var c in Cuarteles)
+            <strong>
+                @Cuarteles.Count
+            </strong>
+        </div>
+    </div>
+
+    <!-- ALERT -->
+    @if (!string.IsNullOrWhiteSpace(Mensaje))    {
+        <div class="message-banner">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>@Mensaje</span>
+        </div>
+    }
+
+    <!-- FILTERS -->
+    <div class="filters-card">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>
+                    Productor
+                </label>
+
+                <SearchSelect TItem="ProductorDto"
+                              Placeholder="Buscar productor..."
+                              SearchMethod="BuscarProductores"
+                              ItemText="@(p => $"{p.Codigo} - {p.Nombre}")"
+                              OnSelected="OnProductorSeleccionado" />
+
+            </div>
+
+            @if (ProductorSeleccionado.HasValue)
             {
-                <tr style="cursor:pointer" @onclick="() => AbrirModal(c)">
-                    <td>@c.CodigoCuartel</td>
-                    <td>@c.Nombre</td>
-                    <td>@c.CodigoOperacional</td>
-                    <td>@c.FechaUltimaActualizacion</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                <div class="filter-group">
+                    <label>
+                        Predio
+                    </label>
+                    <SearchSelect TItem="PredioDto"
+                                  Placeholder="Buscar predio..."
+                                  SearchMethod="BuscarPredios"
+                                  ItemText="@(p => $"{p.Codigo} - {p.Nombre}")"
+                                  OnSelected="OnPredioSeleccionado" />
 
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    @if (Cuarteles.Any())
+    {
+        <div class="table-card">
+            <div class="table-wrapper">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Código Operacional</th>
+                            <th>Última Actualización</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var c in Cuarteles)
+                        {
+                            <tr @onclick="() => AbrirModal(c)">
+                                <td>
+                                    <span class="table-code">
+                                        @c.CodigoCuartel
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @c.Nombre
+                                </td>
+
+                                <td>
+                                    @if (string.IsNullOrWhiteSpace(c.CodigoOperacional))
+                                    {
+                                        <span class="empty-badge">
+                                            Sin asignar
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="code-badge">
+                                            @c.CodigoOperacional
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @(c.FechaUltimaActualizacion?.ToString("dd-MM-yyyy HH:mm")
+                                        ?? "-")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else if (PredioSeleccionado.HasValue)
+    {
+        <div class="empty-card">
+            <i class="fa-regular fa-folder-open"></i>
+            <h3>
+                Sin resultados
+            </h3>
+
+            <p>
+                No existen cuarteles asociados al predio seleccionado.
+            </p>
+        </div>
+    }
+</div>
+
+<!-- MODAL -->
 @if (MostrarModal && CuartelSeleccionado != null)
 {
-    <div class="modal fade show d-block" style="background-color:rgba(0,0,0,0.5)">
-        <div class="modal-dialog">
-            <div class="modal-content">
+    <div class="modal-overlay">
+        <div class="modern-modal">
 
-                <div class="modal-header">
-                    <h5>Actualizar Cuartel @CuartelSeleccionado.Nombre</h5>
-                    <button class="btn-close" @onclick="CerrarModal"></button>
+            <!-- HEADER -->
+            <div class="modal-header">
+                <div>
+                    <h2>
+                        Actualizar Cuartel
+                    </h2>
+
+                    <p>
+                        @CuartelSeleccionado.Nombre
+                    </p>
                 </div>
 
-                <div class="modal-body">
-                    <input class="form-control" style="text-transform: uppercase;"
-                           placeholder="Código Operacional"
-                           value="@CodigoOperacional"
-                           @oninput="OnCodigoChange" />
+                <button class="close-btn" @onclick="CerrarModal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+                <div class="detail-card">
+                    <span>
+                        Código Cuartel
+                    </span>
+
+                    <strong>
+                        @CuartelSeleccionado.CodigoCuartel
+                    </strong>
                 </div>
 
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
-                    <button class="btn btn-primary" @onclick="Guardar">Guardar</button>
+                <div class="form-group">
+                    <label>
+                        Código Operacional
+                    </label>
+
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-barcode"></i>
+                        <input placeholder="Código operacional"
+                               value="@CodigoOperacional"
+                               @oninput="OnCodigoChange" />
+                    </div>
                 </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+                <button class="secondary-btn" @onclick="CerrarModal">
+                    Cancelar
+                </button>
+
+                <button class="primary-btn"
+                        @onclick="Guardar"
+                        disabled="@Guardando">
+
+                    @if (Guardando)
+                    {
+                        <span>
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            Guardando...
+                        </span>
+                    }
+                    else
+                    {
+                        <span>
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Guardar
+                        </span>
+                    }
+                </button>
             </div>
         </div>
     </div>
@@ -97,14 +242,14 @@
 
     private async Task<List<ProductorDto>> BuscarProductores(string filtro)
     {
-        return await Service.GetProductores(CancellationToken.None, filtro);
+        return await Service.GetProductores(
+            CancellationToken.None,
+            filtro);
     }
 
     private async Task OnProductorSeleccionado(ProductorDto p)
     {
         ProductorSeleccionado = p.Codigo;
-
-        // reset estado
         PredioSeleccionado = null;
         Cuarteles.Clear();
     }
@@ -112,9 +257,12 @@
     private async Task<List<PredioDto>> BuscarPredios(string filtro)
     {
         if (!ProductorSeleccionado.HasValue)
-            return new List<PredioDto>();
+            return new();
 
-        return await Service.GetPredios(ProductorSeleccionado.Value, CancellationToken.None, filtro);
+        return await Service.GetPredios(
+            ProductorSeleccionado.Value,
+            CancellationToken.None,
+            filtro);
     }
 
     private async Task OnPredioSeleccionado(PredioDto p)
@@ -123,7 +271,10 @@
 
         if (ProductorSeleccionado.HasValue)
         {
-            Cuarteles = await Service.GetCuarteles(ProductorSeleccionado.Value, p.Codigo, CancellationToken.None);
+            Cuarteles = await Service.GetCuarteles(
+                ProductorSeleccionado.Value,
+                p.Codigo,
+                CancellationToken.None);
         }
     }
 
@@ -147,7 +298,9 @@
 
     async Task Guardar()
     {
-        if (CuartelSeleccionado == null || ProductorSeleccionado == null || PredioSeleccionado == null)
+        if (CuartelSeleccionado == null
+            || ProductorSeleccionado == null
+            || PredioSeleccionado == null)
             return;
 
         if (string.IsNullOrWhiteSpace(CodigoOperacional))
@@ -169,13 +322,17 @@
                 CodigoOperacional = CodigoOperacional
             };
 
-            await Service.UpdateCodigoOperacional(dto, CancellationToken.None);
+            await Service.UpdateCodigoOperacional(
+                dto,
+                CancellationToken.None);
 
             Cuarteles = await Service.GetCuarteles(
                 ProductorSeleccionado.Value,
-                PredioSeleccionado.Value, CancellationToken.None);
+                PredioSeleccionado.Value,
+                CancellationToken.None);
 
             CerrarModal();
+
             Mensaje = "Actualización correcta.";
         }
         catch (Exception ex)

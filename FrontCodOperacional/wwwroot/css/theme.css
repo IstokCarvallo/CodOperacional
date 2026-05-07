@@ -1,14 +1,17 @@
-﻿:root {
-    --bg: #ffffff;
-    --text: #1a1a1a;
-    --sidebar-bg: #f4f6f9;
-    --workspace-bg: #f6f7fb;
-    --border: #ddd;
-}
-[data-theme="dark"] {
-    --bg: #121212;
-    --text: #eaeaea;
-    --sidebar-bg: #1e1e1e;
-    --workspace-bg: #181818;
-    --border: #333;
+﻿[data-theme="dark"] {
+    --bg: #0F172A;
+    --bg-main: #111827;
+    --bg-card: #1E293B;
+    --text: #F9FAFB;
+    --text-main: #F9FAFB;
+    --text-secondary: #94A3B8;
+    --border: #334155;
+    --border-color: #334155;
+    --sidebar-bg: #020617;
+    --sidebar-hover: #1E293B;
+    --workspace-bg: #0F172A;
+    --hover-bg: #1E293B;
+    --primary: #6366F1;
+    --primary-hover: #818CF8;
+    --shadow-soft: 0 10px 25px rgba(0,0,0,0.35);
 }
