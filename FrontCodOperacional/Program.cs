@@ -44,5 +44,7 @@ builder.Services.AddScoped<AuthApiService>(sp =>
 
 builder.Services.AddScoped<PlantasService>();
 builder.Services.AddScoped<CuartelesService>();
+builder.Services.AddScoped<AuditoriaApiService>();
+builder.Services.AddScoped<DashboardApiService>();
 
 await builder.Build().RunAsync();

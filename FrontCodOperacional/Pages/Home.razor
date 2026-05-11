@@ -1,4 +1,273 @@
 ﻿@page "/"
 @attribute [Authorize]
 
-<h3>Home - Pruebas</h3>
+@using FrontCodOperacional.Models.Dashboard
+@using FrontCodOperacional.Services.Api
+
+@inject DashboardApiService DashboardService
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="dashboard-page">
+
+    @if (loading)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <span>
+                Cargando dashboard...
+            </span>
+        </div>
+    }
+    else
+    {
+        <!-- HEADER -->
+        <div class="dashboard-header">
+            <div>
+                <div class="page-badge">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Dashboard Operacional
+                </div>
+                <h1>
+                    Dashboard Operacional
+                </h1>
+
+                <p>
+                    Resumen general operacional
+                </p>
+            </div>
+
+            <button class="refresh-btn" @onclick="CargarDashboard">
+                Actualizar
+            </button>
+        </div>
+
+        <!-- KPI -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-title">
+                    Total Pallets Hoy
+                </span>
+
+                <span class="kpi-value">
+                    @dashboard.TotalPalletsHoy
+                </span>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-title">
+                    Total Especies
+                </span>
+
+                <span class="kpi-value">
+                    @dashboard.TotalCajasHoy.Count()
+                </span>
+            </div>
+
+            <div class="kpi-card">
+                <span class="kpi-title">
+                    Cod. Operacionales
+                </span>
+
+                <span class="kpi-value">
+                    @dashboard.CajasPorCodigo.Count()
+                </span>
+            </div>
+
+            <div class="kpi-card success">
+                <span class="kpi-title">
+                    Total Cajas
+                </span>
+
+                <span class="kpi-value">
+                    @(dashboard.TotalCajasHoy.Sum(x => x.TotalCajasHoy))
+                </span>
+            </div>
+        </div>
+    }
+    <!-- OPERACIONAL -->
+    <div class="page-header">
+        <div>
+            <h1>
+                Actividad Reciente
+            </h1>
+
+            <p>
+                Monitoreo de actualizaciones y producción operacional.
+            </p>
+        </div>
+
+        <div class="records-card">
+            <span class="label">
+                Registros
+            </span>
+
+            <strong>
+                @(dashboard.UltimosCuarteles.Count()
+                    + dashboard.UltimasPlantas.Count())
+            </strong>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <!-- ÚLTIMOS CUARTELES -->
+        <div class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h3>
+                        Últimos Cuarteles
+                    </h3>
+
+                    <span>
+                        Últimas modificaciones registradas
+                    </span>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                @foreach (var item in dashboard.UltimosCuarteles)
+                {
+                    <div class="activity-item">
+                        <div class="activity-avatar">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+
+                        <div class="activity-content">
+                            <strong>
+                                @item.Codigo
+                            </strong>
+
+                            <span>
+                                @item.Nombre
+                            </span>
+                        </div>
+
+                        <div class="activity-meta">                            
+                            <small>
+                                @item.FechaActualizacion
+                            </small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- ÚLTIMAS PLANTAS -->
+        <div class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h3>
+                        Últimas Plantas
+                    </h3>
+
+                    <span>
+                        Cambios recientes en plantas
+                    </span>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                @foreach (var item in dashboard.UltimasPlantas)
+                {
+                    <div class="activity-item">
+                        <div class="activity-avatar success">
+                            <i class="fa-solid fa-industry"></i>
+                        </div>
+
+                        <div class="activity-content">
+                            <strong>
+                                @item.Codigo
+                            </strong>
+
+                            <span>
+                                @item.Nombre
+                            </span>
+                        </div>
+
+                        <div class="activity-meta">
+                            <small>
+                                @item.FechaActualizacion
+                            </small>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP CÓDIGOS -->
+    <div class="panel-card">
+        <div class="panel-header">
+            <div>
+                <h3>
+                    Top Códigos Operacionales
+                </h3>
+
+                <span>
+                    Distribución de cajas operacionales
+                </span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Especie</th>
+                        <th>Código</th>
+                        <th>Cajas</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var item in dashboard.CajasPorCodigo.Take(10))
+                    {
+                        <tr>
+                            <td>
+                                @item.Especie
+                            </td>
+
+                            <td>
+                                <span class="code-badge">
+                                    @item.CodigoOperacional
+                                </span>
+                            </td>
+
+                            <td>
+                                <strong>
+                                    @item.CantidadCajas
+                                </strong>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DashboardResumenDto dashboard = new();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDashboard();
+    }
+
+    private async Task CargarDashboard()
+    {
+        try
+        {
+            loading = true;
+
+            dashboard = await DashboardService.ObtenerResumenAsync();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

@@ -1,0 +1,332 @@
+﻿@page "/auditoria"
+@attribute [Authorize]
+
+@using FrontCodOperacional.Models.Auditoria
+@using FrontCodOperacional.Services.Api
+
+@inject AuditoriaApiService AuditoriaApi
+@inject ILogger<Auditoria> Logger
+@inject IJSRuntime JS
+
+<PageTitle>Auditoría</PageTitle>
+
+<div class="dashboard-page">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <div>
+            <div class="page-badge">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                Trazabilidad
+            </div>
+
+            <h1>
+                Auditoría
+            </h1>
+
+            <p>
+                Seguimiento de cambios y modificaciones operacionales.
+            </p>
+        </div>
+
+        <div class="records-card">
+            <span class="label">
+                Registros
+            </span>
+
+            <strong>
+                @Auditorias.Count
+            </strong>
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters-card">
+        <div class="filters-header">
+            <div>
+                <h3>
+                    Filtros
+                </h3>
+
+                <span>
+                    Búsqueda avanzada de auditoría
+                </span>
+            </div>
+        </div>
+
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label>Desde</label>
+                <InputDate @bind-Value="Desde" class="form-control-modern" />
+            </div>
+
+            <div class="filter-group">
+                <label>Hasta</label>
+                <InputDate @bind-Value="Hasta"class="form-control-modern" />
+            </div>
+
+            <div class="filter-group">
+                <label>Usuario</label>
+                <InputText @bind-Value="Usuario" class="form-control-modern" placeholder="Usuario..." />
+            </div>
+
+            <div class="filter-group">
+                <label>Entidad</label>
+                <InputText @bind-Value="Entidad" class="form-control-modern" placeholder="Entidad..." />
+            </div>
+
+            <div class="filter-group">
+                <label>Acción</label>
+                <InputText @bind-Value="Accion" class="form-control-modern" placeholder="Acción..." />
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn-search"
+                        @onclick="BuscarAsync"
+                        disabled="@Loading">
+
+                    @if (Loading)
+                    {
+                        <span class="spinner-sm"></span>
+                        <span>Cargando</span>
+                    }
+                    else
+                    {
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Buscar</span>
+                    }
+
+                </button>
+
+                <button class="btn-clear"
+                        @onclick="LimpiarFiltros">
+
+                    <i class="fa-solid fa-broom"></i>
+
+                    <span>Limpiar</span>
+                </button>
+
+                <button class="btn-export"
+                        @onclick="ExportarExcelAsync"
+                        disabled="@(!Auditorias.Any())">
+
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>Excel</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>@Error</span>
+        </div>
+    }
+    }
+
+    <!-- TABLA -->
+    <div class="table-card">
+        <div class="panel-header">
+            <div>
+                <h3>
+                    Historial
+                </h3>
+
+                <span>
+                    Registro de cambios operacionales
+                </span>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                        <th>Entidad</th>
+                        <th>Acción</th>
+                        <th>Clave</th>
+                        <th>Campo</th>
+                        <th>Anterior</th>
+                        <th>Nuevo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Loading)
+                    {
+                        <tr class="empty-row">
+                            <td colspan="9" class="empty-state">
+                                Cargando registros...
+                            </td>
+                        </tr>
+                    }
+                    else if (!Auditorias.Any())
+                    {
+                        <tr class="empty-row">
+                            <td colspan="9" class="empty-state">
+                                Sin resultados.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Auditorias)
+                        {
+                            <tr class="empty-row">
+                                <td>
+                                    @item.Id
+                                </td> 
+
+                                <td>
+                                    @item.Fecha.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+
+                                <td>
+                                    @item.Usuario
+                                </td>
+
+                                <td>
+                                    @item.Entidad
+                                </td>
+
+                                <td>
+
+                                    <span class="audit-badge">
+                                        @item.Accion
+                                    </span>
+
+                                </td>
+
+                                <td>
+                                    @item.Clave
+                                </td>
+
+                                <td>
+                                    @item.Campo
+                                </td>
+
+                                <td class="truncate">
+                                    @item.ValorAnterior
+                                </td>
+
+                                <td class="truncate">
+                                    @item.ValorNuevo
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private List<AuditoriaDto> Auditorias = [];
+
+    private bool Loading;
+    private string? Error;
+
+    private DateTime? Desde;
+    private DateTime? Hasta;
+
+    private string? Usuario;
+    private string? Entidad;
+    private string? Accion;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await BuscarAsync();
+    }
+
+    private async Task LimpiarFiltros()
+    {
+        Desde = null;
+        Hasta = null;
+
+        Usuario = null;
+        Entidad = null;
+        Accion = null;
+
+        await BuscarAsync();
+    }
+
+    private async Task BuscarAsync()
+    {
+        try
+        {
+            Loading = true;
+            Error = null;
+
+            Auditorias = await AuditoriaApi.GetAuditoriaAsync(
+                Desde,
+                Hasta,
+                Usuario,
+                Entidad,
+                Accion);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error obteniendo auditoría");
+
+            Error = "No fue posible obtener los registros.";
+        }
+        finally
+        {
+            Loading = false;
+        }
+    }
+
+    private async Task ExportarExcelAsync()
+    {
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+
+        var worksheet = workbook.Worksheets.Add("Auditoria");
+
+        worksheet.Cell(1, 1).Value = "ID";
+        worksheet.Cell(1, 2).Value = "Fecha";
+        worksheet.Cell(1, 3).Value = "Usuario";
+        worksheet.Cell(1, 4).Value = "Entidad";
+        worksheet.Cell(1, 5).Value = "Acción";
+        worksheet.Cell(1, 6).Value = "Clave";
+        worksheet.Cell(1, 7).Value = "Campo";
+        worksheet.Cell(1, 8).Value = "Valor Anterior";
+        worksheet.Cell(1, 9).Value = "Valor Nuevo";
+
+        for (int i = 0; i < Auditorias.Count; i++)
+        {
+            var item = Auditorias[i];
+
+            int row = i + 2;
+
+            worksheet.Cell(row, 1).Value = item.Id;
+            worksheet.Cell(row, 2).Value = item.Fecha;
+            worksheet.Cell(row, 3).Value = item.Usuario;
+            worksheet.Cell(row, 4).Value = item.Entidad;
+            worksheet.Cell(row, 5).Value = item.Accion;
+            worksheet.Cell(row, 6).Value = item.Clave;
+            worksheet.Cell(row, 7).Value = item.Campo;
+            worksheet.Cell(row, 8).Value = item.ValorAnterior;
+            worksheet.Cell(row, 9).Value = item.ValorNuevo;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+
+        workbook.SaveAs(stream);
+
+        var content = Convert.ToBase64String(stream.ToArray());
+
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            $"auditoria_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content);
+    }
+}

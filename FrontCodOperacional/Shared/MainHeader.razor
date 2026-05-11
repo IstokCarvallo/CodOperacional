@@ -22,7 +22,6 @@
 
                     <!-- BOTÓN USUARIO -->
                     <button class="user-trigger" @onclick="ToggleMenu">
-
                         <div class="avatar">
                             @initials
                         </div>
@@ -36,21 +35,17 @@
                                 @role
                             </span>
                         </div>
-
                         <i class="fa-solid fa-chevron-down chevron"></i>
                     </button>
 
                     <!-- DROPDOWN -->
                     <div class="dropdown @(open ? "show" : "")">
-
                         <div class="dropdown-header">
-
                             <div class="avatar large">
                                 @initials
                             </div>
 
                             <div class="dropdown-user-info">
-
                                 <div class="dropdown-name">
                                     @name
                                 </div>
