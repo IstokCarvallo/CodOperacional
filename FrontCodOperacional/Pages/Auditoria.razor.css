@@ -193,7 +193,7 @@
 
 .btn-export {
     background: rgba(16,185,129,0.10);
-    color: var(--success);
+    color: var(--IsSuccess);
     border: 1px solid rgba(16,185,129,0.18);
 }
 

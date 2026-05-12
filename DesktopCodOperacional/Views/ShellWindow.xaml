@@ -1,0 +1,130 @@
+﻿<Window x:Class="DesktopCodOperacional.Views.ShellWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DesktopCodOperacional.Views"
+        mc:Ignorable="d"
+        Title="ShellWindow" Height="800" Width="1400"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized">
+
+    <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- SIDEBAR -->
+        <Border Grid.Column="0"
+                Background="#1E293B">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="80"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- LOGO -->
+                <Border Grid.Row="0"
+                        Background="#0F172A">
+
+                    <TextBlock Text="Código Operacional"
+                               Foreground="White"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- MENU -->
+                <StackPanel Grid.Row="1"
+                            Margin="10">
+
+                    <Button Content="Dashboard"
+                            Height="45"
+                            Margin="0,0,0,10"
+                            Command="{Binding DashboardCommand}"/>
+
+                    <Button Content="Cuarteles"
+                            Height="45"
+                            Margin="0,0,0,10"
+                            Command="{Binding CuartelesCommand}"/>
+
+                    <Button Content="Plantas"
+                            Height="45"
+                            Margin="0,0,0,10"/>
+
+                    <Button Content="Auditoría"
+                            Height="45"
+                            Margin="0,0,0,10"/>
+
+                    <Button Content="Usuarios"
+                            Height="45"
+                            Margin="0,0,0,10"/>
+
+                </StackPanel>
+
+            </Grid>
+
+        </Border>
+
+        <!-- CONTENT -->
+        <Grid Grid.Column="1"
+              Background="#F1F5F9">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- TOPBAR -->
+            <Border Grid.Row="0"
+                    Background="White"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="0,0,0,1">
+
+                <Grid Margin="20,0">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- TÍTULO -->
+                    <TextBlock Text="{Binding Titulo}"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"/>
+
+                    <!-- ACCIONES USUARIO -->
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                VerticalAlignment="Center">
+
+                        <!-- BOTÓN LOGOUT -->
+                        <Button Content="Cerrar sesión"
+                                Command="{Binding LogoutCommand}"
+                                Margin="0,0,10,0"
+                                Padding="12,6"
+                                Background="#EF4444"
+                                Foreground="White"
+                                BorderThickness="0"/>
+
+                    </StackPanel>
+
+                </Grid>
+
+            </Border>
+            
+            <!-- CONTENT AREA -->
+            <ContentControl Grid.Row="1" 
+                            Content="{Binding Navigation.CurrentView}"/>
+
+        </Grid>
+
+    </Grid>
+    
+</Window>

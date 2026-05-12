@@ -78,8 +78,8 @@
         border-color: var(--primary);
     }
 
-    .kpi-card.success {
-        border-left: 5px solid var(--success);
+    .kpi-card.IsSuccess {
+        border-left: 5px solid var(--IsSuccess);
     }
 
 /* KPI */
@@ -285,9 +285,9 @@
     flex-shrink: 0;
 }
 
-    .activity-avatar.success {
+    .activity-avatar.IsSuccess {
         background: rgba(16,185,129,.10);
-        color: var(--success);
+        color: var(--IsSuccess);
     }
 
 .activity-content {

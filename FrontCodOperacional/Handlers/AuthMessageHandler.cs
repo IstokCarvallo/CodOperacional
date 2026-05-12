@@ -104,7 +104,7 @@ namespace FrontCodOperacional.Handlers
                     return new HttpResponseMessage(HttpStatusCode.Unauthorized);
                 }
 
-                _logger.LogInformation("Refresh successful");
+                _logger.LogInformation("Refresh IsSuccessful");
 
                 await _storage.SetTokens(result.AccessToken, result.RefreshToken);
 
