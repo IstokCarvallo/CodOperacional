@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Models.Cuartel;
-using DesktopCodOperacional.Services;
+using DesktopCodOperacional.Services.Api;
 using DesktopCodOperacional.Views;
 using System.Collections.ObjectModel;
 using System.Windows;

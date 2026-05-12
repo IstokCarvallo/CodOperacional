@@ -1,7 +1,10 @@
-﻿using DesktopCodOperacional.Models;
+﻿using DesktopCodOperacional.Models.Common;
 using DesktopCodOperacional.Services;
+using DesktopCodOperacional.Services.Api;
+using DesktopCodOperacional.Services.Auth;
 using DesktopCodOperacional.Services.Http;
 using DesktopCodOperacional.Services.Security;
+using DesktopCodOperacional.Services.UI;
 using DesktopCodOperacional.ViewModels;
 using DesktopCodOperacional.Views;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +36,7 @@ namespace DesktopCodOperacional
                     services.AddSingleton<NavigationService>();
                     services.AddSingleton<CuartelService>();
                     services.AddSingleton<SecureTokenStorageService>();
+                    services.AddSingleton<MenuService>();
 
                     // HTTP Handler
                     services.AddTransient<TokenHandler>();
@@ -47,12 +51,12 @@ namespace DesktopCodOperacional
 
                     // ViewModels
                     services.AddSingleton<LoginViewModel>();
-                    services.AddSingleton<ShellViewModel>();
-                    services.AddTransient<CuartelesViewModel>();
+                    services.AddTransient<ShellViewModel>();
+                    services.AddSingleton<CuartelesViewModel>();
 
                     // Views
-                    services.AddSingleton<LoginView>();
-                    services.AddSingleton<ShellWindow>();
+                    services.AddTransient<LoginView>();
+                    services.AddTransient<ShellWindow>();
                     services.AddTransient<CuartelesView>();
                 })
                 .Build();

@@ -1,9 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DesktopCodOperacional.Models.Menu;
 using DesktopCodOperacional.Services;
+using DesktopCodOperacional.Services.Auth;
+using DesktopCodOperacional.Services.UI;
 using DesktopCodOperacional.Views;
 using Microsoft.Extensions.DependencyInjection;
+using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace DesktopCodOperacional.ViewModels
 {
@@ -11,20 +16,86 @@ namespace DesktopCodOperacional.ViewModels
     {
         private readonly NavigationService _navigation;
         private readonly AuthService _authService;
+        private readonly MenuService _menuService;
 
         public NavigationService Navigation => _navigation;
 
         [ObservableProperty]
         private string titulo = "Dashboard";
 
-        public ShellViewModel(
-            NavigationService navigation,
-            AuthService authService)
+        [ObservableProperty]
+        private string currentRole = string.Empty;
+
+        [ObservableProperty]
+        private ObservableCollection<MenuItemModel> menuItems = new();
+
+        public ShellViewModel(NavigationService navigation,
+                AuthService authService,
+                MenuService menuService)
         {
             _navigation = navigation;
             _authService = authService;
+            _menuService = menuService;
+
+            LoadMenu();
 
             _navigation.Navigate(new DashboardView());
+        }
+        private void LoadMenu()
+        {
+            CurrentRole = _authService.CurrentRole;
+
+            MenuItems = _menuService.BuildMenu(CurrentRole);
+        }
+
+        [RelayCommand]
+        private async Task NavigateMenuAsync(MenuItemModel item)
+        {
+            if (item == null)
+                return;
+
+            switch (item.ViewName)
+            {
+                case "DashboardView":
+                    Dashboard();
+                    break;
+
+                case "CuartelesView":
+                    Cuarteles();
+                    break;
+
+                case "PlantasView":
+                    Plantas();
+                    break;
+
+                case "CambiarPasswordView":
+                    CambiarPassword();
+                    break;
+
+                case "RegistrarUsuariosView":
+                    RegistrarUsuarios();
+                    break;
+
+                case "AuditoriaCompletaView":
+                    AuditoriaCompleta();
+                    break;
+
+                case "AuditoriaPorIdView":
+                    AuditoriaPorId();
+                    break;
+
+                case "LogoutSesionesView":
+                    LogoutSesiones();
+                    break;
+
+                case "LogoutTodasView":
+                    LogoutTodas();
+                    break;
+
+                case "Logout":
+                    await LogoutAsync();
+                    break;
+            }
         }
 
         [RelayCommand]
@@ -44,14 +115,75 @@ namespace DesktopCodOperacional.ViewModels
         }
 
         [RelayCommand]
+        private void Plantas()
+        {
+            Titulo = "Plantas";
+
+            // TODO:
+        }
+
+        [RelayCommand]
+        private void CambiarPassword()
+        {
+            Titulo = "Cambiar Password";
+
+            // TODO:
+        }
+
+        [RelayCommand]
+        private void RegistrarUsuarios()
+        {
+            Titulo = "Registrar Usuarios";
+
+            // TODO:
+        }
+
+        [RelayCommand]
+        private void AuditoriaCompleta()
+        {
+            Titulo = "Auditoría Completa";
+
+            // TODO:
+        }
+
+        [RelayCommand]
+        private void AuditoriaPorId()
+        {
+            Titulo = "Auditoría por ID";
+
+            // TODO:
+        }
+
+        [RelayCommand]
+        private void LogoutSesiones()
+        {
+            Titulo = "Logout Sesiones";
+
+            // TODO:
+        }
+
+        [RelayCommand]
+        private void LogoutTodas()
+        {
+            Titulo = "Logout Todas";
+
+            // TODO:
+        }
+
+        [RelayCommand]
         private async Task LogoutAsync()
         {
             await _authService.LogoutAsync();
 
             var loginView = App.AppHost.Services.GetRequiredService<LoginView>();
+            
             loginView.Show();
 
-            foreach (Window w in Application.Current.Windows)
+            var windows = Application.Current.Windows
+                .OfType<Window>()
+                .ToList();
+
+            foreach (var w in windows)
             {
                 if (w is ShellWindow)
                     w.Close();

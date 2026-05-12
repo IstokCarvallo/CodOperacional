@@ -1,7 +1,7 @@
 ﻿using DesktopCodOperacional.Models.Common;
 using DesktopCodOperacional.Models.Cuartel;
 
-namespace DesktopCodOperacional.Services
+namespace DesktopCodOperacional.Services.Api
 {
     public class CuartelService
     {

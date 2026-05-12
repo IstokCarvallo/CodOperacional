@@ -1,4 +1,4 @@
-﻿namespace DesktopCodOperacional.Models
+﻿namespace DesktopCodOperacional.Models.Common
 {
     public class ApiSettings
     {

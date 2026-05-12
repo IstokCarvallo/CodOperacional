@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DesktopCodOperacional.Views"
+        xmlns:models="clr-namespace:DesktopCodOperacional.Models.Menu"
         mc:Ignorable="d"
         Title="ShellWindow" Height="800" Width="1400"
         WindowStartupLocation="CenterScreen"
@@ -18,57 +19,90 @@
 
         <!-- SIDEBAR -->
         <Border Grid.Column="0"
-                Background="#1E293B">
+            Background="#111827">
 
             <Grid>
 
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="80"/>
+                    <RowDefinition Height="90"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <!-- LOGO -->
-                <Border Grid.Row="0"
-                        Background="#0F172A">
+                <!-- HEADER -->
 
-                    <TextBlock Text="Código Operacional"
+                <StackPanel Orientation="Horizontal"
+                            Margin="20">
+
+                    <Border Width="52"
+                            Height="52"
+                            CornerRadius="14"
+                            Background="#2563EB">
+
+                        <TextBlock Text="CO"
                                Foreground="White"
-                               FontSize="22"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               HorizontalAlignment="Center"/>
-                </Border>
+                               FontWeight="Bold"
+                               FontSize="18"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                    </Border>
 
-                <!-- MENU -->
-                <StackPanel Grid.Row="1"
-                            Margin="10">
+                    <StackPanel Margin="14,0,0,0"
+                                VerticalAlignment="Center">
 
-                    <Button Content="Dashboard"
-                            Height="45"
-                            Margin="0,0,0,10"
-                            Command="{Binding DashboardCommand}"/>
+                        <TextBlock Text="Código Operacional"
+                                   Foreground="White"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"/>
 
-                    <Button Content="Cuarteles"
-                            Height="45"
-                            Margin="0,0,0,10"
-                            Command="{Binding CuartelesCommand}"/>
-
-                    <Button Content="Plantas"
-                            Height="45"
-                            Margin="0,0,0,10"/>
-
-                    <Button Content="Auditoría"
-                            Height="45"
-                            Margin="0,0,0,10"/>
-
-                    <Button Content="Usuarios"
-                            Height="45"
-                            Margin="0,0,0,10"/>
-
+                        <TextBlock Text="{Binding CurrentRole}"
+                                   Foreground="#94A3B8"
+                                   FontSize="12"/>
+                    </StackPanel>
                 </StackPanel>
 
-            </Grid>
+                <!-- MENU -->
 
+                <TreeView Grid.Row="1"
+                          ItemsSource="{Binding MenuItems}"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          Padding="10">
+
+                    <TreeView.Resources>
+
+                        <HierarchicalDataTemplate DataType="{x:Type models:MenuItemModel}"
+                                                 ItemsSource="{Binding Children}">
+
+                            <Button Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="12"
+                                    HorizontalContentAlignment="Left"
+                                    Cursor="Hand"
+                                    Command="{Binding DataContext.NavigateMenuCommand,
+                                    RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                    CommandParameter="{Binding}">
+
+                                <StackPanel Orientation="Horizontal">
+
+                                    <TextBlock Text="{Binding Icon}"
+                                               FontFamily="Segoe MDL2 Assets"
+                                               Foreground="White"
+                                               FontSize="16"/>
+
+                                    <TextBlock Text="{Binding Title}"
+                                               Foreground="White"
+                                               Margin="14,0,0,0"
+                                               FontSize="14"/>
+
+                                </StackPanel>
+
+                            </Button>
+
+                        </HierarchicalDataTemplate>
+
+                    </TreeView.Resources>
+                </TreeView>
+            </Grid>
         </Border>
 
         <!-- CONTENT -->

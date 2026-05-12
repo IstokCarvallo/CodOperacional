@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 
-namespace DesktopCodOperacional.Services
+namespace DesktopCodOperacional.Services.Api
 {
         public class ApiService
         {

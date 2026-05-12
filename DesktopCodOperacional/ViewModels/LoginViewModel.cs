@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using DesktopCodOperacional.Services;
+using DesktopCodOperacional.Services.Auth;
 using DesktopCodOperacional.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;

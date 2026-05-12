@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Models.Cuartel;
-using DesktopCodOperacional.Services;
+using DesktopCodOperacional.Services.Api;
 using System.Windows;
 
 namespace DesktopCodOperacional.ViewModels
@@ -66,7 +66,8 @@ namespace DesktopCodOperacional.ViewModels
 
                 if (!result.Success)
                 {
-                    MessageBox.Show(result.Message ?? "Error al guardar");
+                    MessageBox.Show(result.Message ?? "No fue posible guardar", "Código Operacional",
+                                MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 

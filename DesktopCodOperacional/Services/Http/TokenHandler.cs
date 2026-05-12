@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using DesktopCodOperacional.Services.Auth;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
