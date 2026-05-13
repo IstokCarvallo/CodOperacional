@@ -1,51 +1,74 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Models.Menu;
-using DesktopCodOperacional.Services;
 using DesktopCodOperacional.Services.Auth;
 using DesktopCodOperacional.Services.UI;
+using DesktopCodOperacional.ViewModels.Base;
 using DesktopCodOperacional.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Windows;
-using System.Windows.Controls;
 
 namespace DesktopCodOperacional.ViewModels
 {
-    public partial class ShellViewModel : ObservableObject
+    public partial class ShellViewModel : BaseViewModel
     {
+        private readonly NotificationService _notification;
         private readonly NavigationService _navigation;
         private readonly AuthService _authService;
         private readonly MenuService _menuService;
 
         public NavigationService Navigation => _navigation;
 
+        public GridLength SidebarWidth =>
+                 IsSidebarCollapsed
+                     ? new GridLength(88)
+                     : new GridLength(280);
+
         [ObservableProperty]
         private string titulo = "Dashboard";
+
+        [ObservableProperty]
+        private bool isSidebarCollapsed;
 
         [ObservableProperty]
         private string currentRole = string.Empty;
 
         [ObservableProperty]
+        private string currentUser = string.Empty;
+
+        [ObservableProperty]
+        private string currentDate = DateTime.Now.ToString("dddd dd MMMM yyyy");
+
+        [ObservableProperty]
         private ObservableCollection<MenuItemModel> menuItems = new();
 
-        public ShellViewModel(NavigationService navigation,
+        public ShellViewModel(NotificationService notification,
+                NavigationService navigation,
                 AuthService authService,
                 MenuService menuService)
         {
+            _notification = notification;
             _navigation = navigation;
             _authService = authService;
             _menuService = menuService;
 
             LoadMenu();
 
-            _navigation.Navigate(new DashboardView());
+            _navigation.Navigate<DashboardView>();
         }
         private void LoadMenu()
         {
             CurrentRole = _authService.CurrentRole;
-
+            CurrentUser = _authService.CurrentUser;
             MenuItems = _menuService.BuildMenu(CurrentRole);
+        }
+
+        [RelayCommand]
+        private void ToggleSidebar()
+        {
+            IsSidebarCollapsed = !IsSidebarCollapsed;
+            OnPropertyChanged(nameof(SidebarWidth));
         }
 
         [RelayCommand]
@@ -102,16 +125,14 @@ namespace DesktopCodOperacional.ViewModels
         private void Dashboard()
         {
             Titulo = "Dashboard";
-            _navigation.Navigate(new DashboardView());
+            _navigation.Navigate<DashboardView>();
         }
 
         [RelayCommand]
         private void Cuarteles()
         {
             Titulo = "Cuarteles";
-
-            var view = App.AppHost.Services.GetRequiredService<CuartelesView>();
-            _navigation.Navigate(view);
+            _navigation.Navigate<CuartelesView>();
         }
 
         [RelayCommand]

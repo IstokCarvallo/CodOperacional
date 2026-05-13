@@ -1,7 +1,10 @@
 ﻿using DesktopCodOperacional.Services.Auth;
+using DesktopCodOperacional.Views;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Windows;
 
 namespace DesktopCodOperacional.Services.Http
 {
@@ -37,8 +40,9 @@ namespace DesktopCodOperacional.Services.Http
 
             if (!refreshed)
             {
-                _tokenStorage.Clear();
-                return response;
+                await HandleExpiredSessionAsync();
+
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized);
             }
 
             var retryRequest = await CloneRequestAsync(request);
@@ -54,8 +58,7 @@ namespace DesktopCodOperacional.Services.Http
 
             if (!string.IsNullOrWhiteSpace(token))
             {
-                request.Headers.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
         }
 
@@ -72,6 +75,31 @@ namespace DesktopCodOperacional.Services.Http
                 _refreshLock.Release();
             }
         }
+
+        private async Task HandleExpiredSessionAsync()
+        {
+            await _authService.LogoutAsync();
+
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var login =
+                    App.AppHost.Services
+                    .GetRequiredService<LoginView>();
+
+                login.Show();
+
+                var windows = Application.Current.Windows
+                    .OfType<Window>()
+                    .ToList();
+
+                foreach (var window in windows)
+                {
+                    if (window is ShellWindow)
+                        window.Close();
+                }
+            });
+        }
+
 
         private async Task<HttpRequestMessage> CloneRequestAsync(HttpRequestMessage request)
         {

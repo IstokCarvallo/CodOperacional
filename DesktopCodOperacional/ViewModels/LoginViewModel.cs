@@ -1,16 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Services.Auth;
+using DesktopCodOperacional.Services.UI;
+using DesktopCodOperacional.ViewModels.Base;
 using DesktopCodOperacional.Views;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 
 namespace DesktopCodOperacional.ViewModels
 {
-    public partial class LoginViewModel : ObservableObject
+    public partial class LoginViewModel : BaseViewModel
     {
         private readonly AuthService _authService;
-
+        private readonly NotificationService _notification;
 
         [ObservableProperty]
         private string usuario = string.Empty;
@@ -21,9 +23,10 @@ namespace DesktopCodOperacional.ViewModels
         [ObservableProperty]
         private bool cargando;
 
-        public LoginViewModel(AuthService authService)
+        public LoginViewModel(NotificationService notification, AuthService authService)
         {
             _authService = authService;
+            _notification = notification;
         }
 
         [RelayCommand]
@@ -50,7 +53,7 @@ namespace DesktopCodOperacional.ViewModels
                 }
                 else
                 {
-                    MessageBox.Show("Credenciales inválidas");
+                    _notification.Error("Usuario o contraseña incorrectos");
                 }
             }
             finally

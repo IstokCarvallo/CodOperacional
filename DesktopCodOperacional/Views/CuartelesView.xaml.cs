@@ -5,8 +5,7 @@ namespace DesktopCodOperacional.Views
 {
     public partial class CuartelesView : UserControl
     {
-        public CuartelesView(
-            CuartelesViewModel vm)
+        public CuartelesView(CuartelesViewModel vm)
         {
             InitializeComponent();
 

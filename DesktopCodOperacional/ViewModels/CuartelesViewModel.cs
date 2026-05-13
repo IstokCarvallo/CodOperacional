@@ -1,16 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Models.Cuartel;
+using DesktopCodOperacional.ViewModels.Base;
 using DesktopCodOperacional.Services.Api;
+using DesktopCodOperacional.Services.UI;    
 using DesktopCodOperacional.Views;
 using System.Collections.ObjectModel;
 using System.Windows;
 
+
 namespace DesktopCodOperacional.ViewModels
 {
-    public partial class CuartelesViewModel : ObservableObject
+    public partial class CuartelesViewModel : OperationalViewModel
     {
         private readonly CuartelService _service;
+        private readonly NotificationService _notification;
 
         [ObservableProperty]
         private bool cargando;
@@ -47,9 +51,21 @@ namespace DesktopCodOperacional.ViewModels
         public ObservableCollection<CuartelDto>
             Cuarteles { get; set; } = new();
 
-        public CuartelesViewModel(CuartelService service)
+        public CuartelesViewModel(CuartelService service, NotificationService notification)
         {
             _service = service;
+            _notification = notification;
+
+            // TOOLBAR
+            ShowRefresh = true;
+            ShowExcel = true;
+
+            ShowPdf = false;
+            ShowPrint = false;
+            ShowFilter = false;
+
+            ShowAction = true;
+            ActionText = "Editar Código";
         }
 
         [RelayCommand]
@@ -67,23 +83,45 @@ namespace DesktopCodOperacional.ViewModels
             }
         }
 
+        // TOOLBAR
+        protected override async Task RefreshAsync()
+        {
+            await CargarCuartelesAsync();
+
+            _notification.Success("Datos actualizados");
+        }
+
+        protected override async Task ExcelAsync()
+        {
+            _notification.Info("Exportación Excel próximamente");
+
+            await Task.CompletedTask;
+        }
+
+        protected override async Task ActionAsync()
+        {
+            await EditarCodigo();
+        }
+
+        //Editar
         [RelayCommand]
         private async Task EditarCodigo()
         {
             if (CuartelSeleccionado == null)
+            {
+                _notification.Warning("Debe seleccionar un cuartel");
                 return;
+            }
 
             var window = new EditarCodigoOperacionalWindow();
 
-            var vm =
-                new EditarCodigoOperacionalViewModel(CuartelSeleccionado, _service, window);
+            var vm = new EditarCodigoOperacionalViewModel(_notification, CuartelSeleccionado, _service, window);
 
             window.DataContext = vm;
 
             window.Owner = Application.Current.MainWindow;
 
-            var result =
-                window.ShowDialog();
+            var result = window.ShowDialog();
 
             if (result == true)
             {

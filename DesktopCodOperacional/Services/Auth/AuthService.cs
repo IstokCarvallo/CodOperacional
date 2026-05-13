@@ -122,8 +122,11 @@ namespace DesktopCodOperacional.Services.Auth
                     return false;
                 }
 
-                _tokenStorage.SetTokens(result.AccessToken, result.RefreshToken);
+                Token = result.AccessToken;
+                ReadTokenClaims(Token);
 
+                _tokenStorage.SetTokens(result.AccessToken, result.RefreshToken);
+                
                 return true;
             }
             catch

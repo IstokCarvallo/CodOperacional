@@ -2,12 +2,15 @@
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Models.Cuartel;
 using DesktopCodOperacional.Services.Api;
+using DesktopCodOperacional.Services.UI;
+using DesktopCodOperacional.ViewModels.Base;
 using System.Windows;
 
 namespace DesktopCodOperacional.ViewModels
 {
-    public partial class EditarCodigoOperacionalViewModel : ObservableObject
+    public partial class EditarCodigoOperacionalViewModel : BaseViewModel
     {
+        private readonly NotificationService _notification;
         private readonly CuartelService _service;
         private readonly Window _window;
 
@@ -22,7 +25,7 @@ namespace DesktopCodOperacional.ViewModels
         [ObservableProperty]
         private bool guardando;
 
-        public EditarCodigoOperacionalViewModel(
+        public EditarCodigoOperacionalViewModel(NotificationService notification,
                     CuartelDto cuartel,
                     CuartelService service,
                     Window window)
@@ -33,6 +36,7 @@ namespace DesktopCodOperacional.ViewModels
             Predio = cuartel.Predio;
             CodigoCuartel = cuartel.CodigoCuartel;
             NombreCuartel = cuartel.Nombre;
+            _notification = notification;
 
             CodigoOperacional = cuartel.CodigoOperacional ?? "";
         }
@@ -47,7 +51,7 @@ namespace DesktopCodOperacional.ViewModels
         {
             if (string.IsNullOrWhiteSpace(CodigoOperacional))
             {
-                MessageBox.Show("Debe ingresar el código operacional");
+                _notification.Info("Debe ingresar el código operacional");
                 return;
             }
             try
@@ -66,8 +70,7 @@ namespace DesktopCodOperacional.ViewModels
 
                 if (!result.Success)
                 {
-                    MessageBox.Show(result.Message ?? "No fue posible guardar", "Código Operacional",
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                    _notification.Error(result.Message ?? "No fue posible guardar");
                     return;
                 }
 

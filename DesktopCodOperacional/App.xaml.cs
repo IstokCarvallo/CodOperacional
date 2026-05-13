@@ -37,6 +37,7 @@ namespace DesktopCodOperacional
                     services.AddSingleton<CuartelService>();
                     services.AddSingleton<SecureTokenStorageService>();
                     services.AddSingleton<MenuService>();
+                    services.AddSingleton<NotificationService>();
 
                     // HTTP Handler
                     services.AddTransient<TokenHandler>();
@@ -58,6 +59,7 @@ namespace DesktopCodOperacional
                     services.AddTransient<LoginView>();
                     services.AddTransient<ShellWindow>();
                     services.AddTransient<CuartelesView>();
+                    services.AddTransient<DashboardView>();
                 })
                 .Build();
         }
