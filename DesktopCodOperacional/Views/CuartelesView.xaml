@@ -111,15 +111,7 @@
 
                             <DataGrid.Columns>
 
-                                <DataGridTextColumn Header="Productor"
-                                                    Binding="{Binding Productor}"
-                                                    Width="120"/>
-
-                                <DataGridTextColumn Header="Predio"
-                                                    Binding="{Binding Predio}"
-                                                    Width="120"/>
-
-                                <DataGridTextColumn Header="Cuartel"
+                               <DataGridTextColumn Header="Cuartel"
                                                     Binding="{Binding CodigoCuartel}"
                                                     Width="120"/>
 
@@ -150,15 +142,9 @@
                                          IsIndeterminate="True"
                                          VerticalAlignment="Center"/>
                         </Border>
-
                     </Grid>
-
                 </Border>
-
             </Grid>
-
         </Border>
-
     </Grid>
-
 </UserControl>

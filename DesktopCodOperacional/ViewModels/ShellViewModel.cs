@@ -138,9 +138,8 @@ namespace DesktopCodOperacional.ViewModels
         [RelayCommand]
         private void Plantas()
         {
-            Titulo = "Plantas";
-
-            // TODO:
+            Titulo = "Packing";
+            _navigation.Navigate<PlantasView>();
         }
 
         [RelayCommand]

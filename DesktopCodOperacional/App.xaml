@@ -10,6 +10,7 @@
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Controls.xaml"/>
                 <ResourceDictionary Source="Styles/DataGridStyles.xaml"/>
                 <ResourceDictionary Source="Styles/ToolbarStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>

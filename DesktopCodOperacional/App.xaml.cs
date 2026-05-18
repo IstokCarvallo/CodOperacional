@@ -35,6 +35,7 @@ namespace DesktopCodOperacional
                     services.AddSingleton<AuthService>();
                     services.AddSingleton<NavigationService>();
                     services.AddSingleton<CuartelService>();
+                    services.AddSingleton<PlantaService>();
                     services.AddSingleton<SecureTokenStorageService>();
                     services.AddSingleton<MenuService>();
                     services.AddSingleton<NotificationService>();
@@ -54,11 +55,13 @@ namespace DesktopCodOperacional
                     services.AddSingleton<LoginViewModel>();
                     services.AddTransient<ShellViewModel>();
                     services.AddSingleton<CuartelesViewModel>();
+                    services.AddSingleton<PlantasViewModel>();
 
                     // Views
                     services.AddTransient<LoginView>();
                     services.AddTransient<ShellWindow>();
                     services.AddTransient<CuartelesView>();
+                    services.AddTransient<PlantasView>();
                     services.AddTransient<DashboardView>();
                 })
                 .Build();

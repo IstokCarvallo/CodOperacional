@@ -18,13 +18,13 @@ namespace DesktopCodOperacional.Services.Api
                 return await _httpClient.GetFromJsonAsync<T>(url);
             }
 
-        public async Task<T?> PostAsync<T>(string url, object data)
-        {
-            var response = await _httpClient.PostAsJsonAsync(url, data);
+            public async Task<T?> PostAsync<T>(string url, object data)
+            {
+                var response = await _httpClient.PostAsJsonAsync(url, data);
 
-            var content = await response.Content.ReadFromJsonAsync<T>();
+                var content = await response.Content.ReadFromJsonAsync<T>();
 
-            return content;
-        }
-    }
+                return content;
+            }
+         }
     }
