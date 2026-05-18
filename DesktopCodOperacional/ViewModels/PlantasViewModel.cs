@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Models.Planta;
 using DesktopCodOperacional.Services.Api;
+using DesktopCodOperacional.Services.Export;
 using DesktopCodOperacional.Services.UI;
 using DesktopCodOperacional.ViewModels.Base;
 using DesktopCodOperacional.Views;
@@ -13,6 +14,7 @@ namespace DesktopCodOperacional.ViewModels
     public partial class PlantasViewModel : OperationalViewModel
     {
         private readonly PlantaService _service;
+        private readonly ExportService _exportService;
         private readonly NotificationService _notification;
 
         private const int PageSize = 10;
@@ -37,10 +39,13 @@ namespace DesktopCodOperacional.ViewModels
 
         public ObservableCollection<PlantaDto> Plantas { get; set; } = new();
 
-        public PlantasViewModel(PlantaService service, NotificationService notification)
+        public PlantasViewModel(PlantaService service, 
+                NotificationService notification,
+                ExportService exportService)
         {
             _service = service;
             _notification = notification;
+            _exportService = exportService;
 
             // TOOLBAR
             ShowRefresh = true;
@@ -183,15 +188,24 @@ namespace DesktopCodOperacional.ViewModels
         protected override async Task RefreshAsync()
         {
             await Buscar();
-
             _notification.Success("Datos actualizados");
+        }
+        protected override async Task PrintAsync()
+        {
+            await _exportService.PrintAsync(Plantas, "Listado de Plantas");
+            _notification.Success("Documento enviado a impresión");
+        }
+
+        protected override async Task PdfAsync()
+        {
+            await _exportService.ExportToPdfAsync(Plantas, "Listado de Plantas");
+            _notification.Success("PDF generado correctamente");
         }
 
         protected override async Task ExcelAsync()
         {
-            _notification.Info("Exportación Excel próximamente");
-
-            await Task.CompletedTask;
+            await _exportService.ExportToExcelAsync(Plantas, "Plantas");
+            _notification.Success("Excel generado correctamente");
         }
 
         protected override async Task ActionAsync()

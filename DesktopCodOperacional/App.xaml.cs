@@ -2,6 +2,7 @@
 using DesktopCodOperacional.Services;
 using DesktopCodOperacional.Services.Api;
 using DesktopCodOperacional.Services.Auth;
+using DesktopCodOperacional.Services.Export;
 using DesktopCodOperacional.Services.Http;
 using DesktopCodOperacional.Services.Security;
 using DesktopCodOperacional.Services.UI;
@@ -10,6 +11,7 @@ using DesktopCodOperacional.Views;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using QuestPDF.Infrastructure;
 using System.Windows;
 
 namespace DesktopCodOperacional
@@ -39,6 +41,7 @@ namespace DesktopCodOperacional
                     services.AddSingleton<SecureTokenStorageService>();
                     services.AddSingleton<MenuService>();
                     services.AddSingleton<NotificationService>();
+                    services.AddSingleton<ExportService>();
 
                     // HTTP Handler
                     services.AddTransient<TokenHandler>();
@@ -65,10 +68,12 @@ namespace DesktopCodOperacional
                     services.AddTransient<DashboardView>();
                 })
                 .Build();
-        }
+        }        
 
         protected override async void OnStartup(StartupEventArgs e)
         {
+            QuestPDF.Settings.License = LicenseType.Community;
+
             await AppHost.StartAsync();
 
             var tokenStorage = AppHost.Services.GetRequiredService<TokenStorageService>();
@@ -99,7 +104,7 @@ namespace DesktopCodOperacional
                 secureStorage.Clear();
             }
 
-            OpenLogin();
+            OpenLogin();            
             base.OnStartup(e);
         }
 
