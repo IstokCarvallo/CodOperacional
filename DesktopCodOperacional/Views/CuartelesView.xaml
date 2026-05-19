@@ -112,7 +112,8 @@
                             <DataGrid.Columns>
 
                                <DataGridTextColumn Header="Cuartel"
-                                                    Binding="{Binding CodigoCuartel}"
+                                                    Binding="{Binding CodigoCuartel,
+                                                            StringFormat=D3}"
                                                     Width="120"/>
 
                                 <DataGridTextColumn Header="Nombre"
@@ -124,7 +125,8 @@
                                                     Width="180"/>
 
                                 <DataGridTextColumn Header="Última Actualización"
-                                                    Binding="{Binding FechaUltimaActualizacion}"
+                                                    Binding="{Binding FechaUltimaActualizacion,
+                                                            StringFormat=dd-MM-yyyy HH:mm}"
                                                     Width="220"/>
 
                             </DataGrid.Columns>

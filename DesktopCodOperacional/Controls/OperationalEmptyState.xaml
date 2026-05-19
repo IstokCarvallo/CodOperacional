@@ -1,0 +1,34 @@
+﻿<UserControl x:Class="DesktopCodOperacional.Controls.OperationalEmptyState"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border Panel.ZIndex="10"
+            Background="White"
+            Visibility="{Binding HasData,
+            Converter={StaticResource BoolToVisibilityConverter},
+            ConverterParameter=Inverse}">
+
+        <StackPanel VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+
+            <TextBlock Text="&#xE721;"
+                       FontFamily="Segoe MDL2 Assets"
+                       FontSize="54"
+                       Foreground="#CBD5E1"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="No se encontraron registros"
+                       Margin="0,16,0,6"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="#334155"
+                       HorizontalAlignment="Center"/>
+
+            <TextBlock Text="Prueba ajustando los filtros o búsqueda"
+                       FontSize="13"
+                       Foreground="#64748B"
+                       HorizontalAlignment="Center"/>
+
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -4,6 +4,8 @@
              Height="88">
 
     <Border Background="White"
+            IsEnabled="{Binding IsBusy,
+                        Converter={StaticResource InverseBoolConverter}}"
             CornerRadius="18"
             Padding="18,12,18,12"
             MinHeight="54"
@@ -18,6 +20,9 @@
                 <ColumnDefinition Width="320"/>
                 <ColumnDefinition Width="*"/>
 
+                <ColumnDefinition Width="110"/>
+
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -28,13 +33,11 @@
             </Grid.ColumnDefinitions>
 
             <!-- SEARCH -->
-
             <Border Height="42"
                     Background="#F8FAFC"
                     CornerRadius="12">
 
                 <Grid Margin="14,0">
-
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -53,14 +56,31 @@
                              FontSize="13"
                              Text="{Binding SearchText,
                              UpdateSourceTrigger=PropertyChanged}"/>
-
                 </Grid>
-
             </Border>
 
-            <!-- REFRESH -->
+            <!-- LOADING -->
+            <Grid Grid.Column="2"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  Visibility="{Binding IsBusy,
+                                Converter={StaticResource BoolToVisibilityConverter}}">
 
-            <Button Grid.Column="2"
+                <StackPanel>
+                    <ProgressBar Width="70"
+                                 Height="4"
+                                 IsIndeterminate="True"/>
+
+                    <TextBlock Text="Procesando..."
+                               FontSize="11"
+                               Foreground="#64748B"
+                               HorizontalAlignment="Center"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- REFRESH -->
+            <Button Grid.Column="3"
                     Style="{StaticResource ToolbarButtonStyle}"
                     Command="{Binding RefreshCommand}"
                     Visibility="{Binding ShowRefresh}">
@@ -73,8 +93,7 @@
             </Button>
 
             <!-- FILTER -->
-
-            <Button Grid.Column="3"
+            <Button Grid.Column="4"
                     Style="{StaticResource ToolbarButtonStyle}"
                     Command="{Binding FilterCommand}"
                     Visibility="{Binding ShowFilter}">
@@ -82,12 +101,10 @@
                 <TextBlock Text="&#xE71C;"
                            FontFamily="Segoe MDL2 Assets"
                            FontSize="14"/>
-
             </Button>
 
             <!-- EXCEL -->
-
-            <Button Grid.Column="4"
+            <Button Grid.Column="5"
                     Style="{StaticResource ToolbarButtonStyle}"
                     Command="{Binding ExcelCommand}"
                     Visibility="{Binding ShowExcel}">
@@ -100,14 +117,11 @@
                                Margin="0,0,8,0"/>
 
                     <TextBlock Text="Excel"/>
-
                 </StackPanel>
-
             </Button>
 
             <!-- PDF -->
-
-            <Button Grid.Column="5"
+            <Button Grid.Column="6"
                     Style="{StaticResource ToolbarButtonStyle}"
                     Command="{Binding PdfCommand}"
                     Visibility="{Binding ShowPdf}">
@@ -120,14 +134,11 @@
                                Margin="0,0,8,0"/>
 
                     <TextBlock Text="PDF"/>
-
                 </StackPanel>
-
             </Button>
 
             <!-- PRINT -->
-
-            <Button Grid.Column="6"
+            <Button Grid.Column="7"
                     Style="{StaticResource ToolbarButtonStyle}"
                     Command="{Binding PrintCommand}"
                     Visibility="{Binding ShowPrint}">
@@ -138,9 +149,25 @@
 
             </Button>
 
-            <!-- ACTION -->
+            <!-- FOLDER -->
+            <Button Grid.Column="8"
+                    Style="{StaticResource ToolbarButtonStyle}"
+                    Command="{Binding OpenFolderCommand}"
+                    Visibility="{Binding ShowFolder}">
 
-            <Button Grid.Column="7"
+                <StackPanel Orientation="Horizontal">
+
+                    <TextBlock Text="&#xE838;"
+                               FontFamily="Segoe MDL2 Assets"
+                               FontSize="14"
+                               Margin="0,0,8,0"/>
+
+                    <TextBlock Text="Exportaciones"/>
+                </StackPanel>
+            </Button>
+
+            <!-- ACTION -->
+            <Button Grid.Column="9"
                     Margin="12,0,0,0"
                     Padding="18,0"
                     Height="42"
@@ -152,11 +179,7 @@
                     Visibility="{Binding ShowAction}">
 
                 <TextBlock Text="{Binding ActionText}"/>
-
             </Button>
-
         </Grid>
-
     </Border>
-
 </UserControl>

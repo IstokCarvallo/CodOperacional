@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DesktopCodOperacional.Models.Cuartel;
-using DesktopCodOperacional.ViewModels.Base;
 using DesktopCodOperacional.Services.Api;
+using DesktopCodOperacional.Services.Export;
 using DesktopCodOperacional.Services.UI;    
+using DesktopCodOperacional.ViewModels.Base;
 using DesktopCodOperacional.Views;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -14,6 +15,7 @@ namespace DesktopCodOperacional.ViewModels
     public partial class CuartelesViewModel : OperationalViewModel
     {
         private readonly CuartelService _service;
+        private readonly ExportService _exportService;
         private readonly NotificationService _notification;
 
         [ObservableProperty]
@@ -51,10 +53,13 @@ namespace DesktopCodOperacional.ViewModels
         public ObservableCollection<CuartelDto>
             Cuarteles { get; set; } = new();
 
-        public CuartelesViewModel(CuartelService service, NotificationService notification)
+        public CuartelesViewModel(CuartelService service, 
+                NotificationService notification,
+                ExportService exportService)
         {
             _service = service;
             _notification = notification;
+            _exportService = exportService;
 
             // TOOLBAR
             ShowRefresh = true;
@@ -91,16 +96,55 @@ namespace DesktopCodOperacional.ViewModels
             _notification.Success("Datos actualizados");
         }
 
+        protected override async Task PrintAsync()
+        {
+            try
+            {
+                IsBusy = true;
+                await _exportService.PrintAsync(Cuarteles, "Listado de Cuarteles");
+                _notification.Success("Documento enviado a impresión");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
         protected override async Task ExcelAsync()
         {
-            _notification.Info("Exportación Excel próximamente");
+            try
+            {
+                IsBusy = true;
+                await _exportService.ExportToExcelAsync(Cuarteles, "Cuarteles");
+                _notification.Success("Excel generado correctamente");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
-            await Task.CompletedTask;
+        protected override async Task PdfAsync()
+        {
+            try
+            {
+                IsBusy = true; await _exportService.ExportToPdfAsync(Cuarteles, "Listado de Cuarteles");
+                _notification.Success("PDF generado correctamente");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         protected override async Task ActionAsync()
         {
             await EditarCodigo();
+        }
+        protected override Task OpenFolderAsync()
+        {
+            _exportService.OpenExportFolder();
+            return Task.CompletedTask;
         }
 
         //Editar

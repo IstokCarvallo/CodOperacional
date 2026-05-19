@@ -11,6 +11,11 @@ namespace DesktopCodOperacional.Services.Api
         {
             _apiService = apiService;
         }
+        public async Task<List<PlantaDto>?> ObtenerTodasAsync()
+        {
+            return await BuscarAsync(string.Empty);
+        }
+
         // PAGINADO
         public async Task<PagedResponse<PlantaDto>?>
             ObtenerPaginadoAsync(

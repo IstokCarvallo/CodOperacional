@@ -16,18 +16,24 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- TOOLBAR -->
-
-                <controls:OperationalToolbar Grid.Row="0"
+                <controls:OperationalToolbar Grid.Row="1"
                                              Margin="0,0,0,20"/>
+                
+                <!-- FILTERS -->
+                <controls:OperationalFilters Grid.Row="2"
+                                            Margin="0,0,0,20"/>
+
+                <!-- EMPTY STATE -->
+                <controls:OperationalEmptyState Grid.Row="3"/>
 
                 <!-- GRID -->
-
-                <DataGrid Grid.Row="2"
+                <DataGrid Grid.Row="3"
                           ItemsSource="{Binding Plantas}"
                           SelectedItem="{Binding PlantaSeleccionada}"
                           AutoGenerateColumns="False"
@@ -39,12 +45,15 @@
                           AlternatingRowBackground="#F8FAFC"
                           GridLinesVisibility="Horizontal"
                           HorizontalGridLinesBrush="#E2E8F0"
-                          VerticalGridLinesBrush="#E2E8F0">
+                          VerticalGridLinesBrush="#E2E8F0"
+                          Visibility="{Binding HasData,
+                                        Converter={StaticResource BoolToVisibilityConverter}}">
 
                     <DataGrid.Columns>
 
                         <DataGridTextColumn Header="Código"
-                                            Binding="{Binding Codigo}"
+                                            Binding="{Binding Codigo,
+                                                    StringFormat=D5}"
                                             Width="120"/>
 
                         <DataGridTextColumn Header="Nombre"
@@ -56,56 +65,20 @@
                                             Width="180"/>
 
                         <DataGridTextColumn Header="Última Actualización"
-                                            Binding="{Binding FechaUltimaActualizacion}"
+                                            Binding="{Binding FechaUltimaActualizacion,
+                                                StringFormat=dd-MM-yyyy HH:mm}"
                                             Width="220"/>
 
                     </DataGrid.Columns>
-
                 </DataGrid>
-                
-                <!-- LOADING -->
 
-                <Border Background="#80FFFFFF"
-                        Visibility="{Binding Cargando,
-                        Converter={StaticResource BoolToVisibilityConverter}}">
-
-                    <ProgressBar Width="220"
-                                 Height="6"
-                                 IsIndeterminate="True"
-                                 VerticalAlignment="Center"/>
-                </Border>
+                <!-- LOADING OVERLAY -->
+                <controls:OperationalLoadingOverlay Grid.RowSpan="5"/>
 
                 <!-- PAGINACIÓN -->
-
-                <StackPanel Grid.Row="3"
-                            Orientation="Horizontal"
-                            HorizontalAlignment="Right"
-                            Margin="0,20,0,0">
-
-                    <Button Content="Anterior"
-                            Width="100"
-                            Height="36"
-                            Command="{Binding PaginaAnteriorCommand}"/>
-
-                    <TextBlock Text="{Binding PaginaActual}"
-                               VerticalAlignment="Center"
-                               Margin="14,0,4,0"
-                               FontWeight="SemiBold"/>
-
-                    <TextBlock Text="/"
-                               VerticalAlignment="Center"/>
-
-                    <TextBlock Text="{Binding TotalPaginas}"
-                               VerticalAlignment="Center"
-                               Margin="4,0,14,0"
-                               FontWeight="SemiBold"/>
-
-                    <Button Content="Siguiente"
-                            Width="100"
-                            Height="36"
-                            Command="{Binding SiguientePaginaCommand}"/>
-
-                </StackPanel>
+                <controls:OperationalPagination Grid.Row="4"
+                                                Margin="0,20,0,0"/>
+                
             </Grid>
         </Border>
     </Grid>

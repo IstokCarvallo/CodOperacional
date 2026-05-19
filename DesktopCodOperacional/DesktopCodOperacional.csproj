@@ -34,7 +34,6 @@
   <ItemGroup>
     <Folder Include="Assets\" />
     <Folder Include="Config\" />
-    <Folder Include="Helpers\" />
   </ItemGroup>
 
   <ItemGroup>

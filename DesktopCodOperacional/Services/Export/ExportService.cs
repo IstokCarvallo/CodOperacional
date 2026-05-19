@@ -1,5 +1,8 @@
 ﻿using ClosedXML.Excel;
+using DesktopCodOperacional.Helpers;
 using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QColors = QuestPDF.Helpers.Colors;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -12,6 +15,19 @@ namespace DesktopCodOperacional.Services.Export
 {
     public class ExportService
     {
+        public string ExportFolder =>Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),"Exportaciones");
+
+        public void OpenExportFolder()
+        {
+            if (!Directory.Exists(ExportFolder))
+                Directory.CreateDirectory(ExportFolder);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = ExportFolder,
+                UseShellExecute = true
+            });
+        }
         public async Task PrintAsync<T>(IEnumerable<T> data,string title)
         {
             await Task.Run(() =>
@@ -54,8 +70,7 @@ namespace DesktopCodOperacional.Services.Export
                     {
                         headerRow.Cells.Add(
                             new TableCell(
-                                new Paragraph(
-                                    new Run(property.Name)))
+                                new Paragraph(new Run(ExportHelper.FormatHeader(property.Name))))
                             {
                                 FontWeight = FontWeights.Bold,
                                 Background = Brushes.LightGray,
@@ -125,29 +140,56 @@ namespace DesktopCodOperacional.Services.Export
                         "Exportaciones");
 
                 if (!Directory.Exists(folder))
-                {
                     Directory.CreateDirectory(folder);
-                }
 
-                var fullPath =
-                    Path.Combine(
-                        folder,
-                        $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+                var fullPath = Path.Combine(folder, $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
 
                 Document.Create(container =>
                 {
                     container.Page(page =>
                     {
-                        page.Margin(30);
+                        page.Size(PageSizes.A4.Landscape());
+                        page.Margin(24);
 
+                        // HEADER
                         page.Header()
-                            .Text(title)
-                            .FontSize(20)
-                            .Bold();
+                            .Column(column =>
+                            {
+                                column.Item()
+                                      .Text(text =>
+                                      {
+                                          text.Span("Código Operacional")
+                                              .FontSize(22)
+                                              .Bold();
+                                      });
 
+                                column.Item()
+                                      .PaddingTop(2)
+                                      .Text(text =>
+                                      {
+                                          text.Span(title)
+                                              .FontSize(14)
+                                              .FontColor(QColors.Grey.Darken2);
+                                      });
+
+                                column.Item()
+                                      .PaddingTop(8)
+                                      .Text(text =>
+                                      {
+                                          text.Span(
+                                              $"Generado: {DateTime.Now:dd-MM-yyyy HH:mm}")
+                                              .FontSize(10)
+                                              .FontColor(QColors.Grey.Medium);
+                                      });
+                            });
+
+                        // CONTENT
                         page.Content()
+                            .PaddingVertical(20)
                             .Table(table =>
                             {
+                                // COLUMNS
+
                                 table.ColumnsDefinition(columns =>
                                 {
                                     foreach (var _ in properties)
@@ -156,29 +198,80 @@ namespace DesktopCodOperacional.Services.Export
                                     }
                                 });
 
+                                // HEADER
                                 table.Header(header =>
                                 {
                                     foreach (var property in properties)
                                     {
                                         header.Cell()
-                                              .Padding(5)
-                                              .Text(property.Name)
-                                              .Bold();
+                                              .Background(QColors.Blue.Lighten4)
+                                              .BorderBottom(1)
+                                              .BorderColor(QColors.Grey.Lighten1)
+                                              .PaddingVertical(8)
+                                              .PaddingHorizontal(6)
+                                              .Text(text =>
+                                              {
+                                                  text.Span(
+                                                          ExportHelper.FormatHeader(
+                                                              property.Name))
+                                                      .Bold();
+                                              });
                                     }
                                 });
 
+                                // DATA
+                                var rowIndex = 0;
+
                                 foreach (var item in data)
                                 {
+                                    rowIndex++;
+
                                     foreach (var property in properties)
                                     {
-                                        var value =
-                                            property.GetValue(item);
+                                        var value = property.GetValue(item);
+                                        string text = value?.ToString() ?? "-";
 
                                         table.Cell()
-                                             .Padding(5)
-                                             .Text(value?.ToString() ?? "-");
+                                             .Background(
+                                                 rowIndex % 2 == 0
+                                                     ? QColors.Grey.Lighten5
+                                                     : QColors.White)
+                                             .BorderBottom(1)
+                                             .BorderColor(QColors.Grey.Lighten2)
+                                             .PaddingVertical(6)
+                                             .PaddingHorizontal(6)
+                                             .Text(t =>
+                                             {
+                                                 t.Span(text)
+                                                  .FontSize(10);
+                                             });
                                     }
                                 }
+                            });
+
+                        // FOOTER
+                        page.Footer()
+                            .PaddingTop(10)
+                            .Row(row =>
+                            {
+                                row.RelativeItem()
+                                   .Text(text =>
+                                   {
+                                       text.Span(
+                                               $"Total registros: {data.Count()}")
+                                           .FontSize(10)
+                                           .FontColor(QColors.Grey.Medium);
+                                   });
+
+                                row.ConstantItem(120)
+                                   .AlignRight()
+                                   .Text(text =>
+                                   {
+                                       text.Span("Página ");
+                                       text.CurrentPageNumber();
+                                       text.Span(" de ");
+                                       text.TotalPages();
+                                   });
                             });
                     });
                 })
@@ -194,9 +287,7 @@ namespace DesktopCodOperacional.Services.Export
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    ex.ToString(),
-                    "PDF ERROR");
+                MessageBox.Show(ex.ToString(), "PDF ERROR");
             }
         }
 
@@ -205,31 +296,43 @@ namespace DesktopCodOperacional.Services.Export
             await Task.Run(() =>
             {
                 using var workbook = new XLWorkbook();
-
-                var worksheet =
-                    workbook.Worksheets.Add("Datos");
+                var worksheet = workbook.Worksheets.Add(fileName);
 
                 var properties =
                     typeof(T).GetProperties(
                         BindingFlags.Public |
                         BindingFlags.Instance);
 
+                worksheet.Cell(1, 1).Value = fileName;
+                worksheet.Cell(1, 1).Style.Font.Bold = true;
+                worksheet.Cell(1, 1).Style.Font.FontSize = 18;
+                worksheet.Cell(2, 1).Value = $"Generado: {DateTime.Now:dd-MM-yyyy HH:mm}";
+
                 // HEADERS
                 for (int i = 0; i < properties.Length; i++)
                 {
-                    worksheet.Cell(1, i + 1).Value = properties[i].Name;
-                    worksheet.Cell(1, i + 1).Style.Font.Bold = true;
+                    worksheet.Cell(4, i + 1).Value = ExportHelper.FormatHeader(properties[i].Name);
+                    worksheet.Cell(4, i + 1).Style.Font.Bold = true;
                 }
+                var headerRange =worksheet.Range(4, 1, 4, properties.Length);
+
+                headerRange.Style.Font.Bold = true;
+
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightBlue;
+                headerRange.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
 
                 // DATA
-                int row = 2;
+                int row = 5;
 
                 foreach (var item in data)
                 {
+                    if (row % 2 == 0)
+                        worksheet.Range(row, 1, row, properties.Length)
+                            .Style.Fill.BackgroundColor = XLColor.LightGray;
+                   
                     for (int col = 0; col < properties.Length; col++)
                     {
                         var value = properties[col].GetValue(item);
-
                         worksheet.Cell(row, col + 1).Value = value?.ToString();
                     }
 
@@ -237,14 +340,16 @@ namespace DesktopCodOperacional.Services.Export
                 }
 
                 worksheet.Columns().AdjustToContents();
+                worksheet.RangeUsed().SetAutoFilter();
+                worksheet.SheetView.FreezeRows(4);
+                worksheet.RangeUsed().Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                worksheet.RangeUsed().Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
                 // PATH
                 var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Exportaciones");
 
                 if (!Directory.Exists(folder))
-                {
                     Directory.CreateDirectory(folder);
-                }
 
                 var fullPath = Path.Combine(folder, $"{fileName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx");
 
