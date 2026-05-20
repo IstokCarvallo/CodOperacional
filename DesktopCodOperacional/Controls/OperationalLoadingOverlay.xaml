@@ -4,6 +4,7 @@
 
     <Border Panel.ZIndex="99"
             Background="#66FFFFFF"
+            IsHitTestVisible="False"
             Visibility="{Binding IsBusy,
             Converter={StaticResource BoolToVisibilityConverter}}">
 

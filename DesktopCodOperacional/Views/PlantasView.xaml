@@ -5,81 +5,72 @@
 
     <Grid Margin="20">
 
-        <Border Padding="20"
-                Background="White"
-                CornerRadius="16"
-                BorderBrush="#E2E8F0"
-                BorderThickness="1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <Grid>
+        <!-- TOOLBAR -->
+        <controls:OperationalToolbar Grid.Row="0"
+                                     Margin="0,0,0,20"/>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+        <!-- BODY -->
+        <Grid Grid.Row="1">
+            <Border Background="White"
+                    CornerRadius="16"
+                    BorderBrush="#E2E8F0"
+                    BorderThickness="1">
 
-                <!-- TOOLBAR -->
-                <controls:OperationalToolbar Grid.Row="1"
-                                             Margin="0,0,0,20"/>
-                
-                <!-- FILTERS -->
-                <controls:OperationalFilters Grid.Row="2"
-                                            Margin="0,0,0,20"/>
+                <Grid>
+                    <DataGrid ItemsSource="{Binding Plantas}"
+                              SelectedItem="{Binding PlantaSeleccionada}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              BorderThickness="0"
+                              HeadersVisibility="Column"
+                              RowHeight="38"
+                              AlternatingRowBackground="#F8FAFC"
+                              GridLinesVisibility="Horizontal"
+                              HorizontalGridLinesBrush="#E2E8F0"
+                              VerticalGridLinesBrush="#E2E8F0">
 
-                <!-- EMPTY STATE -->
-                <controls:OperationalEmptyState Grid.Row="3"/>
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Código"
+                                                Binding="{Binding Codigo, StringFormat=D5}"
+                                                Width="120"/>
 
-                <!-- GRID -->
-                <DataGrid Grid.Row="3"
-                          ItemsSource="{Binding Plantas}"
-                          SelectedItem="{Binding PlantaSeleccionada}"
-                          AutoGenerateColumns="False"
-                          IsReadOnly="True"
-                          SelectionMode="Single"
-                          BorderThickness="0"
-                          HeadersVisibility="Column"
-                          RowHeight="38"
-                          AlternatingRowBackground="#F8FAFC"
-                          GridLinesVisibility="Horizontal"
-                          HorizontalGridLinesBrush="#E2E8F0"
-                          VerticalGridLinesBrush="#E2E8F0"
-                          Visibility="{Binding HasData,
-                                        Converter={StaticResource BoolToVisibilityConverter}}">
+                            <DataGridTextColumn Header="Nombre"
+                                                Binding="{Binding Nombre}"
+                                                Width="*"/>
 
-                    <DataGrid.Columns>
+                            <DataGridTextColumn Header="Código Operacional"
+                                                Binding="{Binding CodigoOperacional}"
+                                                Width="180"/>
 
-                        <DataGridTextColumn Header="Código"
-                                            Binding="{Binding Codigo,
-                                                    StringFormat=D5}"
-                                            Width="120"/>
-
-                        <DataGridTextColumn Header="Nombre"
-                                            Binding="{Binding Nombre}"
-                                            Width="*"/>
-
-                        <DataGridTextColumn Header="Código Operacional"
-                                            Binding="{Binding CodigoOperacional}"
-                                            Width="180"/>
-
-                        <DataGridTextColumn Header="Última Actualización"
-                                            Binding="{Binding FechaUltimaActualizacion,
+                            <DataGridTextColumn Header="Última Actualización"
+                                                Binding="{Binding FechaUltimaActualizacion,
                                                 StringFormat=dd-MM-yyyy HH:mm}"
-                                            Width="220"/>
+                                                Width="220"/>
 
-                    </DataGrid.Columns>
-                </DataGrid>
+                        </DataGrid.Columns>
+                    </DataGrid>
 
-                <!-- LOADING OVERLAY -->
-                <controls:OperationalLoadingOverlay Grid.RowSpan="5"/>
+                    <!-- EMPTY -->
+                    <controls:OperationalEmptyState/>
 
-                <!-- PAGINACIÓN -->
-                <controls:OperationalPagination Grid.Row="4"
-                                                Margin="0,20,0,0"/>
-                
-            </Grid>
-        </Border>
+                    <!-- LOADING -->
+                    <controls:OperationalLoadingOverlay/>
+
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- FOOTER -->
+        <controls:OperationalPagination Grid.Row="2"
+                                        Margin="0,20,0,0"/>
+
     </Grid>
+
 </UserControl>

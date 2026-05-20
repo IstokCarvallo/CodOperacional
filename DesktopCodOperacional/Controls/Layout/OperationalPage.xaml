@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="DesktopCodOperacional.Controls.Layout.OperationalPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DesktopCodOperacional.Controls.Layout">
+
+    <Grid Margin="20">
+        <Border Padding="20"
+                Background="White"
+                CornerRadius="16"
+                BorderBrush="#E2E8F0"
+                BorderThickness="1">
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- FILTERS -->
+                <ContentPresenter Grid.Row="0"
+                                  Content="{Binding FiltersContent,
+                                  RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+                <!-- TOOLBAR -->
+                <ContentPresenter Grid.Row="1"
+                                  Margin="0,20,0,20"
+                                  Content="{Binding ToolbarContent,
+                                  RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+                <!-- CONTENT -->
+                <Grid Grid.Row="2">
+                    <!-- BODY -->
+                    <ContentPresenter Content="{Binding RelativeSource={RelativeSource 
+                                            AncestorType=local:OperationalPage},
+                                            Path=BodyContent}"/>
+
+                    <!-- EMPTY -->
+                    <ContentPresenter Panel.ZIndex="5"
+                      Content="{Binding RelativeSource={RelativeSource 
+                                            AncestorType=local:OperationalPage},
+                                            Path=EmptyContent}"/>
+
+                    <!-- LOADING -->
+                    <ContentPresenter Panel.ZIndex="10"
+                      Content="{Binding RelativeSource={RelativeSource 
+                                            AncestorType=local:OperationalPage},
+                                            Path=LoadingContent}"/>
+
+
+                </Grid>
+
+                <!-- FOOTER -->
+                <ContentPresenter Grid.Row="3"
+                                  Margin="0,20,0,0"
+                                  Content="{Binding FooterContent,
+                                  RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

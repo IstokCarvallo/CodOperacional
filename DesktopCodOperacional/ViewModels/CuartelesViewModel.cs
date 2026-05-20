@@ -69,6 +69,8 @@ namespace DesktopCodOperacional.ViewModels
             ShowPrint = false;
             ShowFilter = false;
 
+            ShowFolder = Visibility.Visible;
+
             ShowAction = true;
             ActionText = "Editar Código";
         }
@@ -229,6 +231,8 @@ namespace DesktopCodOperacional.ViewModels
                 {
                     Cuarteles.Add(item);
                 }
+
+                ItemsCount = Cuarteles.Count;
             }
             finally
             {
@@ -238,10 +242,17 @@ namespace DesktopCodOperacional.ViewModels
 
         partial void OnProductorSeleccionadoChanged(ProductorDto? value)
         {
+            PredioSeleccionado = null;
+
+            Cuarteles.Clear();
+
             _ = CargarPrediosAsync();
         }
         partial void OnPredioSeleccionadoChanged(PredioDto? value)
         {
+            if (value == null)
+                return;
+
             _ = CargarCuartelesAsync();
         }
 

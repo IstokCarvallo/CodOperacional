@@ -4,8 +4,6 @@
              Height="88">
 
     <Border Background="White"
-            IsEnabled="{Binding IsBusy,
-                        Converter={StaticResource InverseBoolConverter}}"
             CornerRadius="18"
             Padding="18,12,18,12"
             MinHeight="54"

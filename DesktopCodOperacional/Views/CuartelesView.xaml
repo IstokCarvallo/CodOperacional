@@ -20,7 +20,6 @@
                 </Grid.RowDefinitions>
 
                 <!-- FILTROS -->
-
                 <Grid Grid.Row="0"
                       Margin="0,0,0,20">
 
@@ -31,7 +30,6 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- PRODUCTOR -->
-
                     <StackPanel Grid.Column="0">
 
                         <TextBlock Text="Productor"
@@ -56,7 +54,6 @@
                     </StackPanel>
 
                     <!-- PREDIO -->
-
                     <StackPanel Grid.Column="2">
 
                         <TextBlock Text="Predio"
@@ -83,18 +80,16 @@
                 </Grid>
 
                 <!-- TOOLBAR -->
-
                 <controls:OperationalToolbar Grid.Row="1"
                                              Margin="0,0,0,20"/>
 
-                <!-- GRID -->
+                <!-- BODY -->
+                <Grid Grid.Row="2">
 
-                <Border Grid.Row="2"
-                        BorderBrush="#E2E8F0"
-                        BorderThickness="1"
-                        CornerRadius="12">
-
-                    <Grid>
+                    <!-- GRID -->
+                    <Border BorderBrush="#E2E8F0"
+                            BorderThickness="1"
+                            CornerRadius="12">
 
                         <DataGrid ItemsSource="{Binding Cuarteles}"
                                   SelectedItem="{Binding CuartelSeleccionado}"
@@ -111,9 +106,9 @@
 
                             <DataGrid.Columns>
 
-                               <DataGridTextColumn Header="Cuartel"
+                                <DataGridTextColumn Header="Cuartel"
                                                     Binding="{Binding CodigoCuartel,
-                                                            StringFormat=D3}"
+                                                    StringFormat=D3}"
                                                     Width="120"/>
 
                                 <DataGridTextColumn Header="Nombre"
@@ -126,27 +121,33 @@
 
                                 <DataGridTextColumn Header="Última Actualización"
                                                     Binding="{Binding FechaUltimaActualizacion,
-                                                            StringFormat=dd-MM-yyyy HH:mm}"
+                                                    StringFormat=dd-MM-yyyy HH:mm}"
                                                     Width="220"/>
 
                             </DataGrid.Columns>
 
                         </DataGrid>
 
-                        <!-- LOADING -->
+                    </Border>
 
-                        <Border Background="#80FFFFFF"
-                                Visibility="{Binding Cargando,
-                                Converter={StaticResource BoolToVisibilityConverter}}">
+                    <!-- EMPTY STATE -->
+                    <controls:OperationalEmptyState
+                        Visibility="{Binding HasData,
+                        Converter={StaticResource BoolToVisibilityConverter},
+                        ConverterParameter=Inverse}"/>
 
-                            <ProgressBar Width="220"
-                                         Height="6"
-                                         IsIndeterminate="True"
-                                         VerticalAlignment="Center"/>
-                        </Border>
-                    </Grid>
-                </Border>
+                    
+                     <!--LOADING--> 
+                    <controls:OperationalLoadingOverlay
+                        Visibility="{Binding Cargando,
+                        Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                </Grid>
+
             </Grid>
+
         </Border>
+
     </Grid>
+
 </UserControl>

@@ -47,6 +47,13 @@ namespace DesktopCodOperacional.ViewModels
         }
 
         [RelayCommand]
+        private void Cancelar()
+        {
+            _window.DialogResult = false;
+            _window.Close();
+        }
+
+        [RelayCommand]
         private async Task Guardar()
         {
             if (string.IsNullOrWhiteSpace(CodigoOperacional))

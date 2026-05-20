@@ -6,7 +6,6 @@ using DesktopCodOperacional.Services.Export;
 using DesktopCodOperacional.Services.UI;
 using DesktopCodOperacional.ViewModels.Base;
 using DesktopCodOperacional.Views;
-using DesktopCodOperacional.Models.Common;
 using System.Collections.ObjectModel;
 using System.Windows;
 
@@ -35,6 +34,7 @@ namespace DesktopCodOperacional.ViewModels
 
         [ObservableProperty]
         private int totalRegistros;
+        private bool IsSearching => !string.IsNullOrWhiteSpace(SearchText);
         public ObservableCollection<PlantaDto> Plantas { get; set; } = new();
         public PlantasViewModel(PlantaService service, 
                 NotificationService notification,
@@ -50,121 +50,13 @@ namespace DesktopCodOperacional.ViewModels
 
             ShowPdf = false;
             ShowPrint = false;
-            ShowFilter = true;
+            ShowFilter = false;
 
             ShowFolder = Visibility.Visible;
 
             ShowAction = true;
-            ActionText = "Editar Código";
-
-            Filters.Add(new FilterField
-            {
-                Label = "Código",
-                PropertyName = "Codigo"
-            });
-
-            Filters.Add(new FilterField
-            {
-                Label = "Código Operacional",
-                PropertyName = "CodigoOperacional"
-            });
-
-            ConfigureFilters();
+            ActionText = "Editar Código";       
         }
-
-        protected override void ConfigureFilters()
-        {
-            foreach (var filter in Filters)
-            {
-                filter.ValueChanged += async (_, _) =>
-                {
-                    await AplicarFiltrosAvanzados();
-                };
-            }
-        }
-        protected override async Task ClearFiltersAsync()
-        {
-            foreach (var filter in Filters)
-            {
-                filter.Value = string.Empty;
-            }
-
-            _allPlantas.Clear();
-
-            PaginaActual = 1;
-
-            await Buscar();
-        }
-
-        private async Task AplicarFiltrosAvanzados()
-        {
-            try
-            {
-                var filters = GetActiveFilters();
-
-                // SIN FILTROS
-                if (!filters.Any())
-                {
-                    await Buscar();
-                    return;
-                }
-
-                // CARGAR CACHE COMPLETO
-                if (!_allPlantas.Any())
-                {
-                    var todas = await _service.ObtenerTodasAsync();
-
-                    if (todas != null)
-                        _allPlantas = todas;
-                }
-
-                var filtered = _allPlantas.AsEnumerable();
-
-                foreach (var filter in filters)
-                {
-                    filtered = filtered.Where(x =>
-                    {
-                        var property = x.GetType().GetProperty(filter.Key);
-
-                        if (property == null)
-                            return false;
-
-                        var value = property.GetValue(x)?.ToString();
-
-                        if (string.IsNullOrWhiteSpace(value))
-                            return false;
-
-                        return value.Contains(filter.Value, StringComparison.OrdinalIgnoreCase);
-                    });
-                }
-
-                Plantas.Clear();
-                ItemsCount = 0;
-
-                foreach (var item in filtered)
-                {
-                    Plantas.Add(item);
-                }
-
-                TotalRegistros = Plantas.Count;
-                ItemsCount = Plantas.Count;
-                TotalPaginas = 1;
-            }
-            catch (Exception ex)
-            {
-                _notification.Warning($"Error filtros: {ex.Message}");
-            }
-        }
-
-        private Dictionary<string, string> GetActiveFilters()
-        {
-            return Filters
-                .Where(x => !string.IsNullOrWhiteSpace(x.Value))
-                .ToDictionary(
-                    x => x.PropertyName,
-                    x => x.Value);
-        }
-
         partial void OnSearchTextChanged(string value)
         {
             _ = Buscar();
@@ -208,63 +100,55 @@ namespace DesktopCodOperacional.ViewModels
             {
                 IsBusy = true;
 
-                Plantas.Clear();
-                ItemsCount = 0;
+                var data = string.IsNullOrWhiteSpace(SearchText)
+                    ? await _service.ObtenerPaginadoAsync(PaginaActual, PageSize)
+                    : null;
 
-                // searchText 
+                Plantas.Clear();
+
                 if (!string.IsNullOrWhiteSpace(SearchText))
                 {
                     PaginaActual = 1;
 
-                    var data = await _service.BuscarAsync(SearchText);
+                    var result = await _service.BuscarAsync(SearchText);
 
-                    if (data != null)
+                    if (result != null)
                     {
-                        foreach (var item in data)
-                        {
+                        foreach (var item in result)
                             Plantas.Add(item);
-                        }
 
                         TotalRegistros = Plantas.Count;
-                        ItemsCount = Plantas.Count;
                         TotalPaginas = 1;
                     }
 
                     return;
                 }
 
-                // PAGINADO
-                var response = await _service.ObtenerPaginadoAsync(PaginaActual, PageSize);
-
-                if (response == null || response.Items == null)
+                if (data == null || data.Items == null)
                 {
-                    _notification.Warning("No se pudo obtener datos o la lista está vacía.");
+                    _notification.Warning("Sin datos");
                     return;
                 }
 
-                _allPlantas = response.Items.ToList();
+                _allPlantas = data.Items.ToList();
 
-                foreach (var item in response.Items)
+                foreach (var item in data.Items)
                     Plantas.Add(item);
-                
-                TotalPaginas = response.TotalPaginas;
+
+                TotalPaginas = data.TotalPaginas;
+                TotalRegistros = data.TotalRegistros;
                 ItemsCount = Plantas.Count;
-                TotalRegistros = response.TotalRegistros;
-            }
-            catch (Exception ex)
-            {
-                _notification.Warning($"Error al cargar datos: {ex.Message}");
             }
             finally
             {
-                IsBusy   = false;
+                IsBusy = false;
             }
         }
 
         [RelayCommand]
         private async Task SiguientePagina()
         {
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (IsSearching)
                 return;
 
             if (PaginaActual >= TotalPaginas)
@@ -278,7 +162,7 @@ namespace DesktopCodOperacional.ViewModels
         [RelayCommand]
         private async Task PaginaAnterior()
         {
-            if (!string.IsNullOrWhiteSpace(searchText))
+            if (IsSearching)
                 return;
 
             if (PaginaActual <= 1)
