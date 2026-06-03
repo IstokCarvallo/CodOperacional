@@ -8,6 +8,11 @@
 logs/
 *.txt
 
+# Ignorar configuraciones locales
+appsettings.json
+appsettings.Production.json
+appsettings.Development.json
+
 # User-specific files
 *.rsuser
 *.suo

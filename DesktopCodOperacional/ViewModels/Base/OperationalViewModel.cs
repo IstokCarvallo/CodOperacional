@@ -40,7 +40,7 @@ namespace DesktopCodOperacional.ViewModels.Base
         private bool showPrint;
 
         [ObservableProperty]
-        private Visibility showFolder = Visibility.Collapsed;
+        private bool showFolder = false;
 
         [ObservableProperty]
         private bool showAction;

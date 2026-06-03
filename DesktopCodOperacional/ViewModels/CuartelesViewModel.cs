@@ -64,12 +64,10 @@ namespace DesktopCodOperacional.ViewModels
             // TOOLBAR
             ShowRefresh = true;
             ShowExcel = true;
-
-            ShowPdf = false;
-            ShowPrint = false;
+            ShowPdf = true;
+            ShowPrint = true;
             ShowFilter = false;
-
-            ShowFolder = Visibility.Visible;
+            ShowFolder = true;
 
             ShowAction = true;
             ActionText = "Editar Código";

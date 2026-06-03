@@ -162,8 +162,7 @@ namespace DesktopCodOperacional.ViewModels
         private void AuditoriaCompleta()
         {
             Titulo = "Auditoría Completa";
-
-            // TODO:
+            _navigation.Navigate<AuditoriasView>();
         }
 
         [RelayCommand]

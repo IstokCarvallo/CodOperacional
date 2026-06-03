@@ -12,6 +12,7 @@
                 <ResourceDictionary Source="Styles/Controls.xaml"/>
                 <ResourceDictionary Source="Styles/DataGridStyles.xaml"/>
                 <ResourceDictionary Source="Styles/ToolbarStyles.xaml"/>
+                <ResourceDictionary Source="Styles/Badges.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
