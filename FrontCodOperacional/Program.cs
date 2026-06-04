@@ -23,7 +23,7 @@ builder.Services.AddScoped<HttpErrorHandler>();
 
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7282/api/");
+    client.BaseAddress = new Uri("https://codoperacional-hjghc5e4h7b7g2ea.eastus-01.azurewebsites.net/api/");
 })
 .AddHttpMessageHandler<HttpErrorHandler>()
 .AddHttpMessageHandler<AuthMessageHandler>(); 
@@ -33,7 +33,7 @@ builder.Services.AddScoped<HttpClient>(sp =>
 
 builder.Services.AddHttpClient("Auth", client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7282/api/");
+    client.BaseAddress = new Uri("https://codoperacional-hjghc5e4h7b7g2ea.eastus-01.azurewebsites.net/api/");
 });
 
 builder.Services.AddScoped<AuthApiService>(sp =>
