@@ -185,7 +185,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("https://localhost:7040",
-                                "https://codoperacional-hjghc5e4h7b7g2ea.eastus-01.azurewebsites.net") // puerto del front
+                                "https://zealous-bush-0ada71c0f.7.azurestaticapps.net") // puerto del front
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
