@@ -2,6 +2,7 @@
 
 @inject IJSRuntime JS
 @inject CurrentUserService UserService
+@inject NavigationManager Navigation
 
 
 <header class="main-header">
@@ -58,14 +59,24 @@
 
                         <div class="dropdown-divider"></div>
 
-                        <button class="dropdown-item">
+                        <button class="dropdown-item" @onclick="GoProfile">
                             <i class="fa-regular fa-user"></i>
                             <span>Mi Perfil</span>
-                        </button>
+                        </button>                       
 
                         <button class="dropdown-item">
                             <i class="fa-solid fa-gear"></i>
                             <span>Configuración</span>
+                        </button>
+
+                        <button class="dropdown-item" @onclick="GoChangePassword">
+                            <i class="fa-solid fa-key"></i>
+                            <span>Cambiar contraseña</span>
+                        </button>
+
+                        <button class="dropdown-item" @onclick="GoAbout">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Acerca de</span>
                         </button>
 
                         <div class="dropdown-divider"></div>
@@ -106,6 +117,25 @@
         AuthStateProvider.AuthenticationStateChanged += AuthChangedHandler;
     }
 
+    private void GoAbout()
+    {
+        open = false;
+        Navigation.NavigateTo("/account/about");
+    }
+
+    private void GoChangePassword()
+    {
+        open = false;
+
+        Navigation.NavigateTo("/account/change-password");
+    }
+
+    private void GoProfile()
+    {
+        open = false;
+        Navigation.NavigateTo("/account/profile");
+    }
+
     [JSInvokable]
     public void CloseDropdown()
     {
@@ -137,12 +167,10 @@
         _ = HandleAuthChangedAsync(task);
     }
 
-    // ✔ 3. MÉTODO REAL (ESTE ES EL QUE PREGUNTAS)
+   
     private async Task HandleAuthChangedAsync(Task<AuthenticationState> task)
     {
         var state = await task;
-
-        // 🔴 limpiar cache SIEMPRE
         UserService.Clear();
 
         if (state.User.Identity?.IsAuthenticated == true)

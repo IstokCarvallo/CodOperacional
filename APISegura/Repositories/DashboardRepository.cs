@@ -96,7 +96,7 @@ public class DashboardRepository : IDashboardRepository
         List<DashboardTotalCajasPorEspecieDto> lista = [];
 
         using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
-        using var command = new SqlCommand("FProc_Dashboard_TotalCajasHoy",connection);
+        using var command = new SqlCommand("FProc_Dashboard_TotalCajasPorEspecieHoy", connection);
 
         command.CommandType = CommandType.StoredProcedure;
 

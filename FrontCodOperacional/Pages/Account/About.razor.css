@@ -1,0 +1,72 @@
+﻿.about-page {
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+}
+
+.about-card {
+    width: 100%;
+    max-width: 700px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.about-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 28px;
+}
+
+    .about-header i {
+        font-size: 42px;
+        color: var(--primary-color);
+    }
+
+    .about-header h2 {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+
+    .about-header p {
+        margin-top: 6px;
+        color: var(--text-secondary);
+    }
+
+.about-divider {
+    height: 1px;
+    background: var(--border-color);
+}
+
+.about-section {
+    padding: 20px 28px;
+}
+
+.about-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+    .about-row:not(:last-child) {
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .about-row span {
+        color: var(--text-secondary);
+    }
+
+    .about-row strong {
+        font-weight: 600;
+    }
+
+.about-footer {
+    padding: 18px 28px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: .9rem;
+}

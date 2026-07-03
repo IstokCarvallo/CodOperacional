@@ -8,6 +8,6 @@ namespace APISegura.Repositories.Interfaces
     {
         Task<List<PlantaDto>> SearchAsync(string? filtro);
         Task<Result> UpdateCodigoOperacionalAsync(int codigo, string nuevoCodigo, string usuario);
-        Task<(IEnumerable<Planta>, int)> GetPagedAsync(int pageNumber, int pageSize);
+        Task<(IEnumerable<Planta>, int)> GetPagedAsync(int pageNumber, int pageSize, string? filtro);
     }
 }

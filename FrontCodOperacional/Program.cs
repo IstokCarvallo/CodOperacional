@@ -2,6 +2,7 @@ using FrontCodOperacional;
 using FrontCodOperacional.Auth;
 using FrontCodOperacional.Handlers;
 using FrontCodOperacional.Services.Api;
+using FrontCodOperacional.Services.Auth;
 using FrontCodOperacional.Services.Http;
 using FrontCodOperacional.Services.UI;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -46,5 +47,6 @@ builder.Services.AddScoped<PlantasService>();
 builder.Services.AddScoped<CuartelesService>();
 builder.Services.AddScoped<AuditoriaApiService>();
 builder.Services.AddScoped<DashboardApiService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 await builder.Build().RunAsync();

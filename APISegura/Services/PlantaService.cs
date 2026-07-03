@@ -2,7 +2,6 @@
 using APISegura.Dtos.Common;
 using APISegura.Dtos.Planta;
 using APISegura.Entities;
-using APISegura.Repositories;
 using APISegura.Repositories.Interfaces;
 
 namespace APISegura.Services
@@ -23,7 +22,7 @@ namespace APISegura.Services
             _logger = logger;
         }
 
-        public async Task<List<PlantaDto>> Search(string? filtro)
+        public async Task<List<PlantaDto>>Search(string? filtro)
         {
             try
             {
@@ -58,13 +57,13 @@ namespace APISegura.Services
             }
         }
 
-        public async Task<PagedResult<Planta>> GetPagedAsync(int pageNumber, int pageSize)
+        public async Task<PagedResult<Planta>> GetPagedAsync(int pageNumber, int pageSize, string? filtro)
         {
             if (pageNumber <= 0) pageNumber = 1;
             if (pageSize <= 0) pageSize = 10;
             if (pageSize > 100) pageSize = 100;
 
-            var (items, total) = await _repository.GetPagedAsync(pageNumber, pageSize);
+            var (items, total) = await _repository.GetPagedAsync(pageNumber, pageSize, filtro);
 
             return new PagedResult<Planta>
             {

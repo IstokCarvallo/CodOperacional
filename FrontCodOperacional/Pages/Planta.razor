@@ -7,6 +7,8 @@
 @inject PlantasService PlantasService
 @inject NavigationManager Nav
 
+@implements IDisposable
+
 <PageTitle>Plantas | Código Operacional</PageTitle>
 
 <div class="page-container">
@@ -25,6 +27,20 @@
             <p>
                 Administración y asignación de códigos operacionales.
             </p>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+
+                <input class="search-input"
+                       placeholder="Buscar por código, nombre o código operacional..."
+                       value="@Filtro"
+                       @oninput="OnBuscar" />
+
+                @if (IsLoading)
+                {
+                    <i class="fa-solid fa-spinner fa-spin search-loading"></i>
+                }
+            </div>
         </div>
 
         <div class="header-actions">
@@ -70,6 +86,7 @@
                             <th>Nombre</th>
                             <th>Cod. Operacional</th>
                             <th>Última actualización</th>
+                            <th class="action-column"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -124,6 +141,10 @@
                                             ? p.FechaUltimaActualizacion.Value.ToString("dd-MM-yyyy HH:mm")
                                             : "-")
 
+                                    </td>
+
+                                    <td class="row-arrow">
+                                        <i class="fa-solid fa-chevron-right"></i>
                                     </td>
                                 </tr>
                             }
@@ -260,6 +281,11 @@
     private int PageNumber = 1;
     private int PageSize = 10;
     private int TotalRecords = 0;
+    private string Filtro = string.Empty;
+    private CancellationTokenSource? _searchCts;
+
+    private const int SearchDelay = 300;
+    private string _ultimoFiltro = string.Empty;
 
     private bool IsLoading = false;
 
@@ -279,17 +305,49 @@
         await Cargar();
     }
 
-    private async Task Cargar()
+    public void Dispose()
+    {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+    }
+
+    private async Task OnBuscar(ChangeEventArgs e)
+    {
+        Filtro = e.Value?.ToString() ?? string.Empty;
+
+        PageNumber = 1;
+
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+
+        _searchCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(SearchDelay, _searchCts.Token);
+
+            if (_ultimoFiltro == Filtro)
+                return;
+
+            _ultimoFiltro = Filtro;
+
+            await Cargar(_searchCts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            // El usuario siguió escribiendo.
+            // Se cancela silenciosamente esta búsqueda.
+        }
+    }
+
+    private async Task Cargar(CancellationToken cancellationToken = default)
     {
         try
         {
             IsLoading = true;
             Mensaje = null;
 
-            var data = await PlantasService.GetPaged(
-                PageNumber,
-                PageSize,
-                CancellationToken.None);
+            var data = await PlantasService.GetPaged(PageNumber, PageSize, Filtro, cancellationToken);
 
             if (data != null)
             {

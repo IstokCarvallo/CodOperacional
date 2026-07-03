@@ -19,7 +19,7 @@ namespace APISegura.Controllers
 
         [HttpGet]
         [Authorize(Roles = "User,Admin")]
-        public async Task<IActionResult> Get(string? filtro)
+        public async Task<IActionResult>Get(string? filtro)
         {
             var result = await _service.Search(filtro);
             return Json(result);
@@ -27,7 +27,7 @@ namespace APISegura.Controllers
 
         [HttpPost("codigo-operacional")]
         [Authorize(Roles = "User,Admin")]
-        public async Task<IActionResult> Update(UpdateCodigoOperacionalDto dto)
+        public async Task<IActionResult>Update(UpdateCodigoOperacionalDto dto)
         {
             var result = await _service.UpdateCodigoOperacional(
                 dto.Codigo,
@@ -42,9 +42,12 @@ namespace APISegura.Controllers
 
         [HttpGet("paged")]
         [Authorize(Roles = "User,Admin")]
-        public async Task<IActionResult> GetPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetPaged(
+                                [FromQuery] int pageNumber = 1, 
+                                [FromQuery] int pageSize = 10,
+                                [FromQuery] string? filter = null)
         {
-            var result = await _service.GetPagedAsync(pageNumber, pageSize);
+            var result = await _service.GetPagedAsync(pageNumber, pageSize, filter);
             return Ok(result);
         }
     }

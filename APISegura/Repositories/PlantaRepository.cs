@@ -4,8 +4,6 @@ using APISegura.Entities;
 using APISegura.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Numerics;
-using System.Reflection.PortableExecutable;
 
 namespace APISegura.Repositories;
 
@@ -73,7 +71,7 @@ public class PlantaRepository : IPlantaRepository
         return Result.Failure("Respuesta inválida del servidor");
     }
 
-    public async Task<(IEnumerable<Planta>, int)> GetPagedAsync(int pageNumber, int pageSize)
+    public async Task<(IEnumerable<Planta>, int)>GetPagedAsync(int pageNumber, int pageSize, string? filtro)
     {
         var plantas = new List<Planta>();
         int total = 0;
@@ -85,6 +83,7 @@ public class PlantaRepository : IPlantaRepository
 
             command.Parameters.AddWithValue("@PageNumber", pageNumber);
             command.Parameters.AddWithValue("@PageSize", pageSize);
+            command.Parameters.AddWithValue("@Filtro", (object?)filtro ?? DBNull.Value);
 
             await connection.OpenAsync();
 

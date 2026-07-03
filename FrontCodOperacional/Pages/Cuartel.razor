@@ -89,7 +89,8 @@
                             <th>Código</th>
                             <th>Nombre</th>
                             <th>Código Operacional</th>
-                            <th>Última Actualización</th>
+                            <th>Última Actualización</th>}
+                            <th class="action-column"></th>
                         </tr>
                     </thead>
 
@@ -125,6 +126,10 @@
                                 <td>
                                     @(c.FechaUltimaActualizacion?.ToString("dd-MM-yyyy HH:mm")
                                         ?? "-")
+                                </td>
+
+                                <td class="row-arrow">
+                                    <i class="fa-solid fa-chevron-right"></i>
                                 </td>
                             </tr>
                         }
