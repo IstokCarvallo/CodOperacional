@@ -27,7 +27,7 @@ namespace APISegura.Controllers
 
         [HttpGet("predios")]
         [Authorize(Roles = "User,Admin")]
-        public async Task<IActionResult> GetPredios(int productor, string? filtro)
+        public async Task<IActionResult>GetPredios(int productor, string? filtro)
         {
             var data = await _service.GetPredios(productor, filtro);
             return Json(data);
@@ -35,7 +35,7 @@ namespace APISegura.Controllers
 
         [HttpGet]
         [Authorize(Roles = "User,Admin")]
-        public async Task<IActionResult> Get(int productor, int predio, string? filtro)
+        public async Task<IActionResult>Get(int productor, int predio, string? filtro)
         {
             var data = await _service.Search(productor, predio, filtro);
             return Json(data);
@@ -43,7 +43,7 @@ namespace APISegura.Controllers
 
         [HttpPost("codigo-operacional")]
         [Authorize(Roles = "User,Admin")]
-        public async Task<IActionResult> Update(UpdateCodigoOperacionalCuartelDto dto)
+        public async Task<IActionResult>Update(UpdateCodigoOperacionalCuartelDto dto)
         {
             var result = await _service.Update(dto);
 

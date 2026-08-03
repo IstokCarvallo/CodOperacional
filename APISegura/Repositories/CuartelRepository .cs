@@ -64,7 +64,7 @@ namespace APISegura.Repositories
             return list;
         }
 
-        public async Task<List<CuartelDto>> SearchAsync(int productor, int predio, string? filtro)
+        public async Task<List<CuartelDto>>SearchAsync(int productor, int predio, string? filtro)
         {
             var result = new List<CuartelDto>();
 
@@ -89,6 +89,8 @@ namespace APISegura.Repositories
                     CodigoCuartel = reader.GetInt32(2),
                     Nombre = reader.GetString(3),
                     CodigoOperacional = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    Especie = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                    Variedad = reader.IsDBNull(6) ? "" : reader.GetString(6),
                     FechaUltimaActualizacion = reader.IsDBNull(reader.GetOrdinal("FechaUltimaActualizacion"))
                         ? null
                         : reader.GetDateTime(reader.GetOrdinal("FechaUltimaActualizacion"))

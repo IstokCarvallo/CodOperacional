@@ -35,10 +35,10 @@ namespace APISegura.Services
             }
         }
 
-        public async Task<Result> UpdateCodigoOperacional(int codigo, string nuevoCodigo)
+        public async Task<Result>UpdateCodigoOperacional(int codigo, string nuevoCodigo)
         {
-            if (string.IsNullOrWhiteSpace(nuevoCodigo))
-                return Result.Failure("Código operacional inválido");
+            //if (string.IsNullOrWhiteSpace(nuevoCodigo))
+            //    return Result.Failure("Código operacional inválido");
 
             var usuario = _httpContext.HttpContext?.User?.Identity?.Name ?? "system";
 

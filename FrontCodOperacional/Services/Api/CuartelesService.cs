@@ -12,7 +12,7 @@ namespace FrontCodOperacional.Services.Api
             _http = http;
         }
 
-        public async Task<List<ProductorDto>> GetProductores(CancellationToken c, string? filtro = null)
+        public async Task<List<ProductorDto>>GetProductores(CancellationToken c, string? filtro = null)
         {
             var url = "cuarteles/productores";
 
@@ -23,7 +23,7 @@ namespace FrontCodOperacional.Services.Api
                    ?? [];
         }
 
-        public async Task<List<PredioDto>> GetPredios(int productor, CancellationToken c, string? filtro = null)
+        public async Task<List<PredioDto>>GetPredios(int productor, CancellationToken c, string? filtro = null)
         {
             var url = $"cuarteles/predios?productor={productor}";
 
@@ -34,7 +34,7 @@ namespace FrontCodOperacional.Services.Api
                    ?? [];
         }
 
-        public async Task<List<CuartelDto>> GetCuarteles(int productor, int predio, CancellationToken c)
+        public async Task<List<CuartelDto>>GetCuarteles(int productor, int predio, CancellationToken c)
         {
             return await _http.GetFromJsonAsync<List<CuartelDto>>($"cuarteles?productor={productor}&predio={predio}")
                    ?? [];

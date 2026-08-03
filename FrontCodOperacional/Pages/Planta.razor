@@ -392,21 +392,15 @@
     private void AbrirModal(PlantaDto planta)
     {
         PlantaSeleccionada = planta;
-
-        CodigoOperacionalInput =
-            planta.CodigoOperacional ?? string.Empty;
-
+        CodigoOperacionalInput = planta.CodigoOperacional ?? string.Empty;
         MostrarModal = true;
-
         Mensaje = null;
     }
 
     private void CerrarModal()
     {
         MostrarModal = false;
-
         PlantaSeleccionada = null;
-
         CodigoOperacionalInput = string.Empty;
     }
 
@@ -415,16 +409,15 @@
         if (PlantaSeleccionada == null)
             return;
 
-        if (string.IsNullOrWhiteSpace(CodigoOperacionalInput))
-        {
-            Mensaje = "Debe ingresar un valor.";
-            return;
-        }
+        // if (string.IsNullOrWhiteSpace(CodigoOperacionalInput))
+        // {
+        //     Mensaje = "Debe ingresar un valor.";
+        //     return;
+        // }
 
         try
         {
             Guardando = true;
-
             Mensaje = null;
 
             await PlantasService.ActualizarCodigo(
@@ -436,15 +429,12 @@
                 CancellationToken.None);
 
             CerrarModal();
-
             await Cargar();
-
             Mensaje = "Actualización correcta.";
         }
         catch (Exception ex)
         {
             Mensaje = ex.Message;
-
             Nav.NavigateTo("/login");
         }
         finally

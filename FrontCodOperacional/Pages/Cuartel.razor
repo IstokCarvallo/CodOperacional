@@ -85,11 +85,13 @@
             <div class="table-wrapper">
                 <table class="modern-table">
                     <thead>
-                        <tr>
+                        <tr>>
                             <th>Código</th>
                             <th>Nombre</th>
+                            <th>Especie</th>
+                            <th>Variedad</th>
                             <th>Código Operacional</th>
-                            <th>Última Actualización</th>}
+                            <th>Última Actualización</th>
                             <th class="action-column"></th>
                         </tr>
                     </thead>
@@ -106,6 +108,14 @@
 
                                 <td>
                                     @c.Nombre
+                                </td>
+
+                                <td>
+                                    @c.Especie
+                                </td>
+
+                                <td>
+                                    @c.Variedad
                                 </td>
 
                                 <td>
@@ -308,11 +318,11 @@
             || PredioSeleccionado == null)
             return;
 
-        if (string.IsNullOrWhiteSpace(CodigoOperacional))
-        {
-            Mensaje = "Debe ingresar un valor.";
-            return;
-        }
+        // if (string.IsNullOrWhiteSpace(CodigoOperacional))
+        // {
+        //     Mensaje = "Debe ingresar un valor.";
+        //     return;
+        // }
 
         try
         {
@@ -327,9 +337,7 @@
                 CodigoOperacional = CodigoOperacional
             };
 
-            await Service.UpdateCodigoOperacional(
-                dto,
-                CancellationToken.None);
+            await Service.UpdateCodigoOperacional(dto, CancellationToken.None);
 
             Cuarteles = await Service.GetCuarteles(
                 ProductorSeleccionado.Value,

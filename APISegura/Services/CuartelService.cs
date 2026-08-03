@@ -20,7 +20,7 @@ namespace APISegura.Services
             _logger = logger;
         }
 
-        public async Task<List<CatalogoDto>> GetProductores(string? filtro)
+        public async Task<List<CatalogoDto>>GetProductores(string? filtro)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace APISegura.Services
             }
         }
 
-        public async Task<List<CatalogoDto>> GetPredios(int productor, string? filtro)
+        public async Task<List<CatalogoDto>>GetPredios(int productor, string? filtro)
         {
             if (productor <= 0)
                 return new List<CatalogoDto>();
@@ -49,7 +49,7 @@ namespace APISegura.Services
             }
         }
 
-        public async Task<List<CuartelDto>> Search(int productor, int predio, string? filtro)
+        public async Task<List<CuartelDto>>Search(int productor, int predio, string? filtro)
         {
             try
             {
@@ -62,10 +62,10 @@ namespace APISegura.Services
             }
         }
 
-        public async Task<Result> Update(UpdateCodigoOperacionalCuartelDto dto)
+        public async Task<Result>Update(UpdateCodigoOperacionalCuartelDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.CodigoOperacional))
-                return Result.Failure("Código inválido");
+            //if (string.IsNullOrWhiteSpace(dto.CodigoOperacional))
+            //    return Result.Failure("Código inválido");
 
             var user = _http.HttpContext?.User?.Identity?.Name ?? "system";
 
