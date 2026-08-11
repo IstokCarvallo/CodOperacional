@@ -28,6 +28,7 @@ builder.Services.AddScoped<IPasswordRecoveryService, PasswordRecoveryService>();
 builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
@@ -35,6 +36,13 @@ builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PlantaService>();
 builder.Services.AddScoped<CuartelService>();
+
+builder.Services.AddScoped<IEtiquetaTAGRepository, EtiquetaTAGRepository>();
+builder.Services.AddScoped<IEtiquetaTAGService, EtiquetaTAGService>();
+
+builder.Services.AddScoped<ICausalRepository, CausalRepository>();
+builder.Services.AddScoped<ICausalService, CausalService>();
+
 builder.Services.AddHttpContextAccessor();
 
 

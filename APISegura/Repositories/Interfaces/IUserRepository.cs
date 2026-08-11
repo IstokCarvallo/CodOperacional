@@ -1,4 +1,7 @@
-﻿using APISegura.Entities;
+﻿using APISegura.Common;
+using APISegura.Dtos.Common;
+using APISegura.Dtos.Users;
+using APISegura.Entities;
 
 namespace APISegura.Repositories.Interfaces
 {
@@ -11,5 +14,9 @@ namespace APISegura.Repositories.Interfaces
         Task Update(User user);
         Task UpdatePassword(User user);
         Task UpdateSecurityStamp(User user);
+        Task<PagedResult<UserListDto>> GetPagedAsync(int pageNumber, int pageSize, string? filtro);
+        Task<UserDetailDto?> GetByIdAsync(int id);
+        Task<bool> UpdateAsync(int id, UpdateUserRequest request, string updatedBy);
+        Task<Result> SetActiveAsync(int id, bool active, string updatedBy);
     }
 }

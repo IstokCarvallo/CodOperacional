@@ -1,0 +1,304 @@
+﻿@page "/usuarios"
+@attribute [Authorize]
+
+@using FrontCodOperacional.Models.Users
+@using FrontCodOperacional.Services.Api.Interfaces
+
+@inject IUsersService UsersService
+@inject NavigationManager Nav
+
+@implements IDisposable
+
+<div class="page-header">
+    <div>
+        <div class="page-badge">
+            <i class="fa-solid fa-users"></i>
+            Usuarios
+        </div>
+
+        <h1>
+            Administración de Usuarios
+        </h1>
+
+        <p>
+            Gestión de usuarios, roles y estados de acceso.
+        </p>
+    </div>
+
+
+    <div class="header-actions">
+        <div class="records-card">
+            <span class="label">
+                Registros
+            </span>
+
+            <strong>
+                @TotalRecords
+            </strong>
+        </div>
+    </div>
+</div>
+
+
+    <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+        <input class="search-input"
+               placeholder="Buscar por usuario, nombre o email..."
+               value="@Filtro"
+               @oninput="OnBuscar" />
+
+        @if (IsLoading)
+        {
+            <i class="fa-solid fa-spinner fa-spin search-loading"></i>
+        }
+    </div>
+
+
+@if (!string.IsNullOrWhiteSpace(Mensaje))
+{
+    <div class="message-banner">
+
+        <i class="fa-solid fa-circle-info"></i>
+
+        <span>
+            @Mensaje
+        </span>
+
+    </div>
+}
+
+
+<div class="table-card">
+    @if (IsLoading)
+    {
+        <div class="loading-state">
+            <div class="loader"></div>
+            <span>
+                Cargando usuarios...
+            </span>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>
+                            Usuario
+                        </th>
+
+                        <th>
+                            Nombre
+                        </th>
+
+                        <th>
+                            Rol
+                        </th>
+
+                        <th>
+                            Estado
+                        </th>
+
+                        <th class="action-column">
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (ListaUsuarios.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <i class="fa-regular fa-folder-open"></i>
+
+                                    <span>
+                                        No existen registros.
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var usuario in ListaUsuarios)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="table-code">
+                                        @usuario.Username
+                                    </span>
+                                </td>
+
+
+                                <td>
+                                    @usuario.Nombre
+                                </td>
+
+
+                                <td>
+                                    <span class="code-badge">
+                                        @usuario.Role
+                                    </span>
+                                </td>
+
+
+                                <td>
+                                    @if (usuario.Active)
+                                    {
+                                        <span class="active-badge">
+                                            Activo
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="empty-badge">
+                                            Inactivo
+                                        </span>
+                                    }
+                                </td>
+
+
+                                <td class="row-arrow">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+        <div class="table-footer">
+            <button class="pagination-btn"
+                    @onclick="Anterior"
+                    disabled="@(PageNumber == 1 || IsLoading)">
+
+                <i class="fa-solid fa-chevron-left"></i>
+                Anterior
+            </button>
+
+            <div class="page-indicator">
+                Página
+                <strong>
+                    @PageNumber
+                </strong>
+            </div>
+
+            <button class="pagination-btn"
+                    @onclick="Siguiente"
+                    disabled="@(PageNumber * PageSize >= TotalRecords || IsLoading)">
+                Siguiente
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    }
+</div>
+
+@code 
+{
+    private List<UserDto> ListaUsuarios = new();
+    private int PageNumber = 1;
+    private int PageSize = 10;
+    private int TotalRecords = 0;
+    private string Filtro = string.Empty;
+    private bool IsLoading = false;
+    private string? Mensaje;
+
+    private CancellationTokenSource? _searchCts;
+    private const int SearchDelay = 300;
+    private string _ultimoFiltro = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    public void Dispose()
+    {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+    }
+
+    private async Task OnBuscar(ChangeEventArgs e)
+    {
+        Filtro = e.Value?.ToString() ?? string.Empty;
+        PageNumber = 1;
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+
+        _searchCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(SearchDelay, _searchCts.Token);
+
+            if (_ultimoFiltro == Filtro)
+                return;
+
+            _ultimoFiltro = Filtro;
+            await Cargar(_searchCts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+
+        }
+    }
+
+
+    private async Task Cargar(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            IsLoading = true;
+            Mensaje = null;
+
+            var data = await UsersService.GetPaged(
+                PageNumber,
+                PageSize,
+                Filtro,
+                cancellationToken);
+
+            if (data != null)
+            {
+                ListaUsuarios = data.Items;
+                TotalRecords = data.TotalRegistros;
+            }
+
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Nav.NavigateTo("/login");
+        }
+        catch
+        {
+            Mensaje = "Error al cargar usuarios.";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+
+    private async Task Siguiente()
+    {
+        if (PageNumber * PageSize >= TotalRecords)
+            return;
+
+        PageNumber++;
+        await Cargar();
+    }
+
+    private async Task Anterior()
+    {
+        if (PageNumber == 1)
+            return;
+
+        PageNumber--;
+        await Cargar();
+    }
+}

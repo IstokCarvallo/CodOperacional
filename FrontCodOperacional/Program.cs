@@ -2,6 +2,7 @@ using FrontCodOperacional;
 using FrontCodOperacional.Auth;
 using FrontCodOperacional.Handlers;
 using FrontCodOperacional.Services.Api;
+using FrontCodOperacional.Services.Api.Interfaces;
 using FrontCodOperacional.Services.Auth;
 using FrontCodOperacional.Services.Http;
 using FrontCodOperacional.Services.UI;
@@ -48,5 +49,6 @@ builder.Services.AddScoped<CuartelesService>();
 builder.Services.AddScoped<AuditoriaApiService>();
 builder.Services.AddScoped<DashboardApiService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IUsersService, UsersService>();
 
 await builder.Build().RunAsync();

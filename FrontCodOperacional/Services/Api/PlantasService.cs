@@ -25,7 +25,7 @@ namespace FrontCodOperacional.Services.Api
 
         public async Task ActualizarCodigo(ActualizarCodigoOperacionalRequest request, CancellationToken ct)
         {
-            var response = await _http.PostAsJsonAsync("plantas/codigo-operacional", request);
+            var response = await _http.PostAsJsonAsync("plantas/codigo-operacional", request, ct);
             response.EnsureSuccessStatusCode();
         }
     }
