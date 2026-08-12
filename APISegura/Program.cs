@@ -26,9 +26,11 @@ builder.Services.AddScoped<ICuartelRepository, CuartelRepository>();
 builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 builder.Services.AddScoped<IPasswordRecoveryService, PasswordRecoveryService>();
 builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEtiquetaTAGRepository, EtiquetaTAGRepository>();
+builder.Services.AddScoped<IEtiquetaTAGService, EtiquetaTAGService>();
+builder.Services.AddScoped<IInspeccionService, InspeccionService>(); 
+
 builder.Services.AddScoped<AuditoriaService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<AuthService>();
@@ -36,10 +38,9 @@ builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<PlantaService>();
 builder.Services.AddScoped<CuartelService>();
-
-builder.Services.AddScoped<IEtiquetaTAGRepository, EtiquetaTAGRepository>();
-builder.Services.AddScoped<IEtiquetaTAGService, EtiquetaTAGService>();
-
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IUserService, UserService>(); 
+builder.Services.AddScoped<IInspeccionRepository, InspeccionRepository>();
 builder.Services.AddScoped<ICausalRepository, CausalRepository>();
 builder.Services.AddScoped<ICausalService, CausalService>();
 

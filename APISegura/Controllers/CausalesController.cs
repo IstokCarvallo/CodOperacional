@@ -18,6 +18,21 @@ namespace APISegura.Controllers
             _service = service;
         }
 
+        [HttpGet("especies")]
+        public async Task<IActionResult> GetEspecies(
+            [FromQuery] string? filtro,
+            CancellationToken cancellationToken)
+        {
+            var result = await _service.GetEspeciesAsync(filtro,
+                                            cancellationToken);
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+
         [HttpGet("especie/{espeCodigo:int}")]
         public async Task<IActionResult> GetByEspecie(
             int espeCodigo,
