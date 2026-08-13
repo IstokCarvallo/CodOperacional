@@ -50,5 +50,6 @@ builder.Services.AddScoped<AuditoriaApiService>();
 builder.Services.AddScoped<DashboardApiService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<ICausalesService, CausalesService>();
 
 await builder.Build().RunAsync();

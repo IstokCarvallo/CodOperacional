@@ -2,11 +2,9 @@
 {
     public class CausalDto
     {
-        public int CausalId { get; set; }
-        public int EspeCodigo { get; set; }
-        public string Codigo { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-        public byte Tipo { get; set; }
+        public int Causal_Id { get; set; }
+        public int Codigo { get; set; }
+        public string Nombre{ get; set; } = string.Empty;
         public bool Activo { get; set; }
     }
 }

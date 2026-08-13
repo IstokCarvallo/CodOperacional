@@ -7,7 +7,7 @@ namespace APISegura.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Calidad")]
     public class EtiquetasTAGController : ControllerBase
     {
         private readonly IEtiquetaTAGService _service;

@@ -7,7 +7,7 @@ namespace APISegura.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Roles = "Admin,Calidad")]
     public class CausalesController : ControllerBase
     {
         private readonly ICausalService _service;
@@ -33,16 +33,15 @@ namespace APISegura.Controllers
         }
 
 
-        [HttpGet("especie/{espeCodigo:int}")]
+        [HttpGet("especie/{Codigo:int}")]
         public async Task<IActionResult> GetByEspecie(
-            int espeCodigo,
-            CancellationToken cancellationToken)
+            int Codigo,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? filtro = null,
+            CancellationToken cancellationToken = default)
         {
-            var result =
-                await _service.GetByEspecieAsync(espeCodigo, cancellationToken);
-
-            if (!result.Success)
-                return BadRequest(result);
+            var result = await _service.GetByEspecieAsync(Codigo, pageNumber, pageSize, filtro, cancellationToken);
 
             return Ok(result);
         }

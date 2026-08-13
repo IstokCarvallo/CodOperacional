@@ -36,25 +36,35 @@ namespace APISegura.Repositories
                 result.AsList());
         }
 
-        public async Task<Result<List<CausalDto>>> GetByEspecieAsync(int espeCodigo, 
-                                                            CancellationToken cancellationToken)
+        public async Task<(IEnumerable<CausalDto> Causales, int TotalRegistros)> GetByEspecieAsync(
+            int Codigo,
+            int PageNumber,
+            int PageSize,
+            string? Filtro,
+            CancellationToken cancellationToken)
         {
-            using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+            using var connection = new SqlConnection(
+                _config.GetConnectionString("DefaultConnection"));
 
-            var command = new CommandDefinition(
-                "dbo.SP_Causales_GetByEspecie",
+            var command = new CommandDefinition("dbo.SP_Causales_GetByEspecie",
                 new
                 {
-                    EspeCodigo = espeCodigo
+                    Codigo = Codigo,
+                    PageNumber = PageNumber,
+                    PageSize = PageSize,
+                    Filtro = Filtro
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: cancellationToken);
 
-            var result = await connection.QueryAsync<CausalDto>(
-                command);
+            using var multi = await connection.QueryMultipleAsync(command);
 
-            return Result<List<CausalDto>>.Ok(
-                result.AsList());
+            
+            var totalRegistros = await multi.ReadSingleAsync<int>();
+
+            var causales = (await multi.ReadAsync<CausalDto>()).AsList();
+
+            return (causales, totalRegistros);
         }
 
         public async Task<Result<int>> CreateAsync(CreateCausalRequest request, 
@@ -66,18 +76,20 @@ namespace APISegura.Repositories
                 "dbo.SP_Causales_Create",
                 new
                 {
-                    request.EspeCodigo,
                     request.Codigo,
-                    request.Descripcion,
-                    request.Tipo
+                    request.Nombre
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: cancellationToken);
 
-            var causalId = await connection.QuerySingleAsync<int>(
-                command);
+            var result = await connection.QuerySingleAsync<CreateCausalResult>(command);
 
-            return Result<int>.Ok(causalId);
+            if (!string.IsNullOrWhiteSpace(result.Message))
+            {
+                return Result<int>.Fail(result.Message);
+            }
+
+            return Result<int>.Ok(result.CausalId);
         }
 
         public async Task<Result> SetActiveAsync(int causalId, bool activo, 
@@ -98,6 +110,12 @@ namespace APISegura.Repositories
             await connection.ExecuteAsync(command);
 
             return Result.Success();
+        }
+
+        private sealed class CreateCausalResult
+        {
+            public int CausalId { get; set; }
+            public string? Message { get; set; }
         }
     }
 }

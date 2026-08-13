@@ -57,6 +57,38 @@
                 </ul>
             </div>
 
+             <!-- CALIDAD INSPECIONES / RECLAMOS -->
+            <div class="nav-group">
+                <span class="nav-title">Reclamos Calidad</span>
+                <ul>
+                    <li>
+                        <NavLink href="/causales" Match="NavLinkMatch.Prefix" class="nav-link"
+                                 title="Causales" data-tooltip="Causales">
+                            <div class="left">
+                                <span class="icon"><i class="fa-solid fa-list-check"></i></span>
+                                @if (!Collapsed)
+                                {
+                                    <span class="link-text">Causales</span>
+                                }
+                            </div>
+                        </NavLink>
+                    </li>
+
+                    <li>
+                        <NavLink href="/inspecciones" Match="NavLinkMatch.Prefix" class="nav-link"
+                                 title="Inspecciones" data-tooltip="Inspecciones">
+                            <div class="left">
+                                <span class="icon"><i class="fa-solid fa-clipboard-check"></i></span>
+                                @if (!Collapsed)
+                                {
+                                    <span class="link-text">Inspecciones</span>
+                                }
+                            </div>
+                        </NavLink>
+                    </li>
+                </ul>
+            </div>
+
             <!-- ADMIN -->
             @if (authState.User.IsInRole("Admin"))
             {

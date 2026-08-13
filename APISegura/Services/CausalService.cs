@@ -22,10 +22,27 @@ namespace APISegura.Services
             return _repository.GetEspeciesAsync(filtro, cancellationToken);
         }
 
-        public Task<Result<List<CausalDto>>> GetByEspecieAsync(int espeCodigo, 
-                                                    CancellationToken cancellationToken)
+        public async Task<PagedResult<CausalDto>> GetByEspecieAsync(
+            int Codigo,
+            int pageNumber,
+            int pageSize,
+            string? filtro,
+            CancellationToken cancellationToken)
         {
-            return _repository.GetByEspecieAsync(espeCodigo, cancellationToken);
+            if (pageNumber <= 0) pageNumber = 1;
+            if (pageSize <= 0) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var (items, total) = await _repository.GetByEspecieAsync(
+                Codigo, pageNumber, pageSize, filtro, cancellationToken);
+
+            return new PagedResult<CausalDto>
+            {
+                Items = items,
+                TotalRegistros = total,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public Task<Result<int>> CreateAsync(CreateCausalRequest request, 

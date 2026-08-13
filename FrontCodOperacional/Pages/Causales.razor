@@ -1,0 +1,736 @@
+﻿@page "/causales"
+@attribute [Authorize]
+
+@using FrontCodOperacional.Models.Causal
+@using FrontCodOperacional.Services.Api
+@using FrontCodOperacional.Services.Api.Interfaces
+
+@inject ICausalesService CausalesService
+@inject NavigationManager Nav
+
+@implements IDisposable
+
+<PageTitle>Causales | Reclamos de Calidad</PageTitle>
+
+<div class="page-container">
+    <!-- HEADER -->
+    <div class="page-header">
+        <div>
+            <div class="page-badge">
+                <i class="fa-solid fa-list-check"></i>
+                Calidad
+            </div>
+
+            <h1>
+                Causales
+            </h1>
+
+            <p>
+                Administración de causales de reclamos por especie.
+            </p>
+
+            <div class="filters-row">
+
+                <!-- FILTROS -->
+                <div class="causal-filters">
+
+                    <!-- ESPECIE -->
+                    <div class="species-selector">
+
+                        <i class="fa-solid fa-leaf"></i>
+
+                        <select class="search-input"
+                                value="@EspecieSeleccionada"
+                                @onchange="OnEspecieChange">
+
+                            <option value="">
+                                Seleccione una especie...
+                            </option>
+
+                            @foreach (var especie in Especies)
+                            {
+                                <option value="@especie.Codigo">
+                                    @especie.Codigo - @especie.Nombre
+                                </option>
+                            }
+
+                        </select>
+
+                    </div>
+
+                    <!-- BUSQUEDA -->
+                    @if (EspecieSeleccionada.HasValue)
+                    {
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input class="search-input"
+                                   placeholder="Buscar por código o causal..."
+                                   value="@Filtro"
+                                   @oninput="OnBuscar" />
+
+                            @if (IsLoading)
+                            {
+                                <i class="fa-solid fa-spinner fa-spin search-loading"></i>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            @if (EspecieSeleccionada.HasValue)
+            {
+                <button class="primary-btn"
+                        @onclick="NuevaCausal">
+                    <i class="fa-solid fa-plus"></i>
+                    Nueva causal
+                </button>
+            }
+
+            <div class="records-card">
+                <span class="label">
+                    Registros
+                </span>
+
+                <strong>
+                    @TotalRecords
+                </strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALERT -->
+    @if (!string.IsNullOrWhiteSpace(Mensaje))
+    {
+        <div class="message-banner">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>
+                @Mensaje
+            </span>
+        </div>
+    }
+
+    <!-- TABLE CARD -->
+    <div class="table-card">
+        @if (!EspecieSeleccionada.HasValue)        {
+            <div class="empty-state">
+                <i class="fa-solid fa-leaf"></i>
+                <span>
+                    Seleccione una especie para consultar sus causales.
+                </span>
+            </div>
+        }
+        else if (IsLoading)
+        {
+            <div class="loading-state">
+                <div class="loader"></div>
+                <span>
+                    Cargando información...
+                </span>
+            </div>
+        }
+        else
+        {
+            <!-- TABLE -->
+            <div class="table-wrapper">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Causal</th>
+                            <th>Última actualización</th>
+                            <th class="action-column"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ListaCausales.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state">
+                                        <i class="fa-regular fa-folder-open"></i>
+                                        <span>
+                                            No existen causales para la especie seleccionada.
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>                        }
+                        else
+                        {
+                            @foreach (var causal in ListaCausales)
+                            {
+                                <tr @onclick="() => AbrirModal(causal)">
+                                    <td>
+                                        <span class="table-code">
+                                            @causal.Codigo
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        @causal.Nombre
+                                    </td>
+
+                                    <td class="row-arrow">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="table-footer">
+                <button class="pagination-btn"
+                        @onclick="Anterior"
+                        disabled="@(PageNumber == 1 || IsLoading)">
+                    <i class="fa-solid fa-chevron-left"></i>
+                    Anterior
+                </button>
+
+                <div class="page-indicator">
+                    Página
+                    <strong>
+                        @PageNumber
+                    </strong>
+                </div>
+
+                <button class="pagination-btn"
+                        @onclick="Siguiente"
+                        disabled="@(PageNumber * PageSize >= TotalRecords || IsLoading)">
+                    Siguiente
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+
+<!-- MODAL -->
+@if (MostrarModal && CausalSeleccionada != null)
+{
+    <div class="modal-overlay">
+
+        <div class="modern-modal">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+
+                <div>
+
+                    <h2>
+                        @(ModoEdicion ? "Modificar causal" : "Nueva causal")
+                    </h2>
+
+                    <p>
+                        Administración de causal de reclamo.
+                    </p>
+
+                </div>
+
+                <button class="close-btn"
+                        @onclick="CerrarModal"
+                        disabled="@Guardando">
+
+                    <i class="fa-solid fa-xmark"></i>
+
+                </button>
+
+            </div>
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <div class="detail-grid">
+
+                    <div class="detail-item">
+
+                        <span>Especie</span>
+
+                        <strong>
+                            @EspecieNombreSeleccionada
+                        </strong>
+
+                    </div>
+
+                    <div class="detail-item">
+
+                        <span>Código especie</span>
+
+                        <strong>
+                            @EspecieSeleccionada
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <!-- CODIGO -->
+                <div class="form-group">
+
+                    <label>
+                        Código
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-hashtag"></i>
+
+                        <input placeholder="Ingrese código"
+                               value="@CodigoInput"
+                               @oninput="OnCodigoChange"
+                               disabled="@ModoEdicion" />
+
+                    </div>
+
+                </div>
+
+                <!-- CAUSAL -->
+                <div class="form-group">
+
+                    <label>
+                        Causal
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <i class="fa-solid fa-clipboard-list"></i>
+
+                        <input placeholder="Ingrese descripción de la causal"
+                               value="@NombreInput"
+                               @oninput="OnNombreChange" />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+
+                @if (ModoEdicion)
+                {
+                    <button class="secondary-btn danger-btn"
+                            @onclick="EliminarCausal"
+                            disabled="@Guardando">
+
+                        <i class="fa-solid fa-trash"></i>
+
+                        Eliminar
+
+                    </button>
+                }
+
+                <div class="modal-footer-right">
+
+                    <button class="secondary-btn"
+                            @onclick="CerrarModal"
+                            disabled="@Guardando">
+
+                        Cancelar
+
+                    </button>
+
+                    <button class="primary-btn"
+                            @onclick="Guardar"
+                            disabled="@Guardando">
+
+                        @if (Guardando)
+                        {
+                            <span>
+
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+
+                                Guardando...
+
+                            </span>
+                        }
+                        else
+                        {
+                            <span>
+
+                                <i class="fa-solid fa-floppy-disk"></i>
+
+                                Guardar
+
+                            </span>
+                        }
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    private List<CausalDto> ListaCausales = new();
+    private List<CausalEspecieDto> Especies = new();
+    private CausalDto? CausalSeleccionada;
+
+    private int PageNumber = 1;
+    private int PageSize = 10;
+    private int TotalRecords = 0;
+
+    private int? EspecieSeleccionada;
+
+    private string EspecieNombreSeleccionada = string.Empty;
+    private string Filtro = string.Empty;
+
+    private CancellationTokenSource? _searchCts;
+
+    private const int SearchDelay = 300;
+    private string _ultimoFiltro = string.Empty;
+    private int? _ultimaEspecie;
+
+    private bool IsLoading = false;
+    private bool MostrarModal = false;
+    private bool ModoEdicion = false;
+    private int CodigoInput = 0;
+    private string NombreInput = string.Empty;
+
+    private string? Mensaje;
+    private bool Guardando = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarEspecies();
+    }
+
+
+    public void Dispose()
+    {
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+    }
+
+
+    private async Task CargarEspecies()
+    {
+        try
+        {
+            IsLoading = true;
+            Mensaje = null;
+
+            var data = await CausalesService.GetEspecies();
+
+            if (data != null)
+            {
+                Especies = data;
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Nav.NavigateTo("/login");
+        }
+        catch
+        {
+            Mensaje = "Error al cargar las especies.";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+
+    private async Task OnEspecieChange(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var codigo))
+        {
+            EspecieSeleccionada = null;
+            EspecieNombreSeleccionada = string.Empty;
+
+            ListaCausales.Clear();
+            TotalRecords = 0;
+
+            return;
+        }
+
+        EspecieSeleccionada = codigo;
+
+        var especie = Especies.FirstOrDefault(x => x.Codigo == codigo);
+
+        EspecieNombreSeleccionada = especie?.Nombre ?? string.Empty;
+
+        Filtro = string.Empty;
+
+        PageNumber = 1;
+
+        _ultimoFiltro = string.Empty;
+        _ultimaEspecie = null;
+
+        await Cargar();
+    }
+
+
+    private async Task OnBuscar(ChangeEventArgs e)
+    {
+        Filtro = e.Value?.ToString() ?? string.Empty;
+
+        PageNumber = 1;
+
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+
+        _searchCts =
+            new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(SearchDelay, _searchCts.Token);
+
+            if (_ultimoFiltro == Filtro && _ultimaEspecie == EspecieSeleccionada)
+                return;
+            
+            _ultimoFiltro = Filtro;
+            _ultimaEspecie = EspecieSeleccionada;
+
+            await Cargar(_searchCts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            // El usuario continuó escribiendo.
+        }
+    }
+
+
+    private async Task Cargar(CancellationToken cancellationToken = default)
+    {
+        if (!EspecieSeleccionada.HasValue)
+            return;
+        try
+        {
+            IsLoading = true;
+            Mensaje = null;
+
+            var data =
+                await CausalesService.GetByEspecie(
+                    EspecieSeleccionada.Value,
+                    PageNumber,
+                    PageSize,
+                    Filtro,
+                    cancellationToken);
+
+            if (data != null)
+            {
+                ListaCausales = data.Items;
+                TotalRecords = data.TotalRegistros;
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Nav.NavigateTo("/login");
+        }
+        catch
+        {
+            Mensaje = "Error al cargar las causales.";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+
+    private async Task Siguiente()
+    {
+        if (PageNumber * PageSize >= TotalRecords)
+            return;
+
+        PageNumber++;
+
+        await Cargar();
+    }
+
+
+    private async Task Anterior()
+    {
+        if (PageNumber == 1)
+            return;
+
+        PageNumber--;
+
+        await Cargar();
+    }
+
+
+    private void NuevaCausal()
+    {
+        if (!EspecieSeleccionada.HasValue)
+            return;
+
+        CausalSeleccionada = new CausalDto
+        {
+            Codigo = EspecieSeleccionada.Value
+        };
+
+        CodigoInput = 0;
+        NombreInput = string.Empty;
+
+        ModoEdicion = false;
+        MostrarModal = true;
+
+        Mensaje = null;
+    }
+
+
+    private void AbrirModal(CausalDto causal)
+    {
+        CausalSeleccionada = causal;
+
+        CodigoInput = causal.Codigo;
+        NombreInput = causal.Nombre;
+
+        ModoEdicion = true;
+        MostrarModal = true;
+
+        Mensaje = null;
+    }
+
+
+    private void CerrarModal()
+    {
+        MostrarModal = false;
+
+        CausalSeleccionada = null;
+
+        CodigoInput = 0;
+        NombreInput = string.Empty;
+    }
+
+
+    private void OnCodigoChange(ChangeEventArgs e)
+    {
+        CodigoInput = int.Parse(e.Value?.ToString() ?? "0");
+    }
+
+
+    private void OnNombreChange(ChangeEventArgs e)
+    {
+        NombreInput = e.Value?.ToString() ?? string.Empty;
+    }
+
+
+    private async Task Guardar()
+    {
+        if (CausalSeleccionada == null)
+            return;
+
+        if (!EspecieSeleccionada.HasValue)
+        {
+            Mensaje = "Debe seleccionar una especie.";
+            return;
+        }
+
+        if (CodigoInput == 0)
+        {
+            Mensaje = "Debe ingresar un código.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NombreInput))
+        {
+            Mensaje = "Debe ingresar una causal.";
+            return;
+        }
+
+        try
+        {
+            Guardando = true;
+            Mensaje = null;
+
+            if (ModoEdicion)
+            {
+                var request = new UpdateCausalRequest
+                {
+                    Nombre = NombreInput.Trim()
+                };
+
+                await CausalesService.Update(
+                    CausalSeleccionada.CausalId,
+                    request,
+                    CancellationToken.None);
+            }
+            else
+            {
+                var request = new CreateCausalRequest
+                {
+                    Codigo = EspecieSeleccionada.Value,
+                    Nombre = NombreInput.Trim()
+                };
+
+                await CausalesService.Create(request, CancellationToken.None);
+            }
+
+            var mensajeExito = ModoEdicion
+                ? "Causal actualizada correctamente."
+                : "Causal creada correctamente.";
+
+            CerrarModal();
+
+            await Cargar();
+
+            Mensaje = mensajeExito;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Nav.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            Mensaje = ex.Message;
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+
+
+    private async Task EliminarCausal()
+    {
+        if (CausalSeleccionada == null)
+            return;
+
+        try
+        {
+            Guardando = true;
+            Mensaje = null;
+
+            await CausalesService.SetActive(
+                CausalSeleccionada.CausalId,
+                false,
+                CancellationToken.None);
+
+            CerrarModal();
+
+            await Cargar();
+
+            Mensaje = "Causal eliminada correctamente.";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Nav.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            Mensaje = ex.Message;
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+
+}
