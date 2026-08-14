@@ -17,8 +17,9 @@ namespace APISegura.Repositories
             _config = config;
         }
 
-        public async Task<Result<List<CatalogoDto>>> GetEspeciesAsync(string? filtro,
-                                                        CancellationToken cancellationToken)
+        public async Task<Result<List<CatalogoDto>>> GetEspeciesAsync(
+                                string? filtro,
+                                CancellationToken ct)
         {
             using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
@@ -28,7 +29,7 @@ namespace APISegura.Repositories
                     Filtro = filtro
                 },
                 commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken);
+                cancellationToken: ct);
 
             var result = await connection.QueryAsync<CatalogoDto>(command);
 
@@ -41,7 +42,7 @@ namespace APISegura.Repositories
             int PageNumber,
             int PageSize,
             string? Filtro,
-            CancellationToken cancellationToken)
+            CancellationToken ct)
         {
             using var connection = new SqlConnection(
                 _config.GetConnectionString("DefaultConnection"));
@@ -55,7 +56,7 @@ namespace APISegura.Repositories
                     Filtro = Filtro
                 },
                 commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken);
+                cancellationToken: ct);
 
             using var multi = await connection.QueryMultipleAsync(command);
 
@@ -67,8 +68,7 @@ namespace APISegura.Repositories
             return (causales, totalRegistros);
         }
 
-        public async Task<Result<int>> CreateAsync(CreateCausalRequest request, 
-                                                        CancellationToken cancellationToken)
+        public async Task<Result<int>> CreateAsync(CreateCausalRequest request, string usuario, CancellationToken ct)
         {
             using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
@@ -77,10 +77,11 @@ namespace APISegura.Repositories
                 new
                 {
                     request.Codigo,
-                    request.Nombre
+                    request.Nombre,
+                    usuario
                 },
                 commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken);
+                cancellationToken: ct);
 
             var result = await connection.QuerySingleAsync<CreateCausalResult>(command);
 
@@ -92,8 +93,29 @@ namespace APISegura.Repositories
             return Result<int>.Ok(result.CausalId);
         }
 
-        public async Task<Result> SetActiveAsync(int causalId, bool activo, 
-                                                CancellationToken cancellationToken)
+        public async Task<Result> UpdateAsync(
+                int causalId,
+                UpdateCausalRequest request,
+                string usuario,
+                CancellationToken ct)
+        {
+            using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
+
+            var command = new CommandDefinition("dbo.SP_Causales_Update",
+                new
+                {
+                    CausalId = causalId,
+                    request.Nombre
+                },
+                commandType: CommandType.StoredProcedure,
+                cancellationToken: ct);
+
+            await connection.ExecuteAsync(command);
+
+            return Result.Success();
+        }
+
+        public async Task<Result> SetActiveAsync(int causalId, bool activo, string usuario, CancellationToken ct)
         {
             using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
 
@@ -105,7 +127,7 @@ namespace APISegura.Repositories
                     Activo = activo
                 },
                 commandType: CommandType.StoredProcedure,
-                cancellationToken: cancellationToken);
+                cancellationToken: ct);
 
             await connection.ExecuteAsync(command);
 

@@ -60,20 +60,17 @@ namespace FrontCodOperacional.Services.Api
                 url += $"&filtro={Uri.EscapeDataString(filtro)}";
             }
 
-            var response = await _http.GetAsync(
-                url,
-                cancellationToken);
+            var response = await _http.GetAsync(url, cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
                 throw new UnauthorizedAccessException();
 
             response.EnsureSuccessStatusCode();
 
-            var result =
-                await response.Content.ReadFromJsonAsync<ApiResult<PagedResult<CausalDto>>>(
-                    cancellationToken: cancellationToken);
+            var result = await response.Content.ReadFromJsonAsync<PagedResult<CausalDto>>(
+                        cancellationToken: cancellationToken);
 
-            return result?.Data;
+            return result;
         }
 
 

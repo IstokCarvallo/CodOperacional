@@ -64,9 +64,6 @@ namespace APISegura.Services
 
         public async Task<Result>Update(UpdateCodigoOperacionalCuartelDto dto)
         {
-            //if (string.IsNullOrWhiteSpace(dto.CodigoOperacional))
-            //    return Result.Failure("Código inválido");
-
             var user = _http.HttpContext?.User?.Identity?.Name ?? "system";
 
             try

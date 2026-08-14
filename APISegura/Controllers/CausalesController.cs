@@ -20,11 +20,9 @@ namespace APISegura.Controllers
 
         [HttpGet("especies")]
         public async Task<IActionResult> GetEspecies(
-            [FromQuery] string? filtro,
-            CancellationToken cancellationToken)
+            [FromQuery] string? filtro, CancellationToken ct)
         {
-            var result = await _service.GetEspeciesAsync(filtro,
-                                            cancellationToken);
+            var result = await _service.GetEspeciesAsync(filtro, ct);
 
             if (!result.Success)
                 return BadRequest(result);
@@ -39,9 +37,9 @@ namespace APISegura.Controllers
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? filtro = null,
-            CancellationToken cancellationToken = default)
+            CancellationToken ct = default)
         {
-            var result = await _service.GetByEspecieAsync(Codigo, pageNumber, pageSize, filtro, cancellationToken);
+            var result = await _service.GetByEspecieAsync(Codigo, pageNumber, pageSize, filtro, ct);
 
             return Ok(result);
         }
@@ -49,12 +47,26 @@ namespace APISegura.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateCausalRequest request,
-            CancellationToken cancellationToken)
+            CancellationToken ct)
         {
             var result =
-                await _service.CreateAsync(request, cancellationToken);
+                await _service.CreateAsync(request, ct);
 
             if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPut("{causalId:int}")]
+        public async Task<IActionResult> Update(
+            int causalId,
+            [FromBody] UpdateCausalRequest request,
+            CancellationToken ct)
+        {
+            var result = await _service.UpdateAsync(causalId, request, ct);
+
+            if (!result.IsSuccess)
                 return BadRequest(result);
 
             return Ok(result);
@@ -64,13 +76,10 @@ namespace APISegura.Controllers
         public async Task<IActionResult> SetActive(
             int causalId,
             [FromBody] SetCausalActiveRequest request,
-            CancellationToken cancellationToken)
+            CancellationToken ct)
         {
             var result =
-                await _service.SetActiveAsync(
-                    causalId,
-                    request.Activo,
-                    cancellationToken);
+                await _service.SetActiveAsync(causalId, request.Activo, ct);
 
             if (!result.IsSuccess)
                 return BadRequest(result);

@@ -38,6 +38,7 @@ public class EtiquetaTAGRepository : IEtiquetaTAGRepository
 
     public async Task<Result<int>> CreateAsync(
         CreateEtiquetaTAGRequest request,
+        String Usuario,
         CancellationToken cancellationToken)
     {
         using var connection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
@@ -46,7 +47,8 @@ public class EtiquetaTAGRepository : IEtiquetaTAGRepository
             new
             {
                 request.Nombre,
-                request.Descripcion
+                request.Descripcion,
+                Usuario
             },
             commandType: CommandType.StoredProcedure,
             cancellationToken: cancellationToken);

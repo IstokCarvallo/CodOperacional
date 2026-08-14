@@ -137,9 +137,9 @@
                 <table class="modern-table">
                     <thead>
                         <tr>
-                            <th>Código</th>
+                            <th>Especie</th>
                             <th>Causal</th>
-                            <th>Última actualización</th>
+                            <th>Estado</th>
                             <th class="action-column"></th>
                         </tr>
                     </thead>
@@ -163,12 +163,16 @@
                                 <tr @onclick="() => AbrirModal(causal)">
                                     <td>
                                         <span class="table-code">
-                                            @causal.Codigo
+                                            @causal.Especie
                                         </span>
                                     </td>
 
                                     <td>
                                         @causal.Nombre
+                                    </td>
+
+                                    <td>
+                                        @(causal.Activo ? "Activo" : "Inactivo")
                                     </td>
 
                                     <td class="row-arrow">
@@ -213,14 +217,10 @@
 @if (MostrarModal && CausalSeleccionada != null)
 {
     <div class="modal-overlay">
-
         <div class="modern-modal">
-
             <!-- HEADER -->
             <div class="modal-header">
-
                 <div>
-
                     <h2>
                         @(ModoEdicion ? "Modificar causal" : "Nueva causal")
                     </h2>
@@ -228,111 +228,89 @@
                     <p>
                         Administración de causal de reclamo.
                     </p>
-
                 </div>
 
                 <button class="close-btn"
                         @onclick="CerrarModal"
                         disabled="@Guardando">
-
                     <i class="fa-solid fa-xmark"></i>
-
                 </button>
-
             </div>
 
             <!-- BODY -->
             <div class="modal-body">
-
                 <div class="detail-grid">
-
                     <div class="detail-item">
-
                         <span>Especie</span>
-
                         <strong>
                             @EspecieNombreSeleccionada
                         </strong>
-
                     </div>
 
                     <div class="detail-item">
-
                         <span>Código especie</span>
-
                         <strong>
                             @EspecieSeleccionada
                         </strong>
-
                     </div>
 
+                    @if (ModoEdicion && CausalSeleccionada != null)
+                    {
+                        <div class="detail-item">
+                            <span>Estado</span>
+                            <strong>
+                                @(CausalSeleccionada.Activo
+                                    ? "Activo"
+                                    : "Inactivo")
+                            </strong>
+                        </div>
+                    }
                 </div>
 
-                <!-- CODIGO -->
+                <!-- NOMBRE -->
                 <div class="form-group">
-
                     <label>
-                        Código
+                        Nombre de la causal
                     </label>
 
                     <div class="input-wrapper">
-
-                        <i class="fa-solid fa-hashtag"></i>
-
-                        <input placeholder="Ingrese código"
-                               value="@CodigoInput"
-                               @oninput="OnCodigoChange"
-                               disabled="@ModoEdicion" />
-
-                    </div>
-
-                </div>
-
-                <!-- CAUSAL -->
-                <div class="form-group">
-
-                    <label>
-                        Causal
-                    </label>
-
-                    <div class="input-wrapper">
-
                         <i class="fa-solid fa-clipboard-list"></i>
 
-                        <input placeholder="Ingrese descripción de la causal"
+                        <input placeholder="Ingrese nombre de la causal"
                                value="@NombreInput"
-                               @oninput="OnNombreChange" />
-
+                               @oninput="OnNombreChange"
+                               disabled="@Guardando" />
                     </div>
-
                 </div>
-
             </div>
 
             <!-- FOOTER -->
             <div class="modal-footer">
 
-                @if (ModoEdicion)
+                @if (ModoEdicion && CausalSeleccionada != null)
                 {
-                    <button class="secondary-btn danger-btn"
-                            @onclick="EliminarCausal"
+                    <button class="secondary-btn"
+                            @onclick="CambiarEstado"
                             disabled="@Guardando">
 
-                        <i class="fa-solid fa-trash"></i>
-
-                        Eliminar
-
+                        @if (CausalSeleccionada.Activo)
+                        {
+                            <i class="fa-solid fa-ban"></i>
+                            <span>Desactivar</span>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-check"></i>
+                            <span>Activar</span>
+                        }
                     </button>
                 }
 
                 <div class="modal-footer-right">
-
                     <button class="secondary-btn"
                             @onclick="CerrarModal"
                             disabled="@Guardando">
-
                         Cancelar
-
                     </button>
 
                     <button class="primary-btn"
@@ -342,32 +320,21 @@
                         @if (Guardando)
                         {
                             <span>
-
                                 <i class="fa-solid fa-spinner fa-spin"></i>
-
                                 Guardando...
-
                             </span>
                         }
                         else
                         {
                             <span>
-
                                 <i class="fa-solid fa-floppy-disk"></i>
-
                                 Guardar
-
                             </span>
                         }
-
                     </button>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
 }
 
@@ -395,7 +362,7 @@
     private bool IsLoading = false;
     private bool MostrarModal = false;
     private bool ModoEdicion = false;
-    private int CodigoInput = 0;
+
     private string NombreInput = string.Empty;
 
     private string? Mensaje;
@@ -524,7 +491,14 @@
 
             if (data != null)
             {
-                ListaCausales = data.Items;
+                ListaCausales = data.Items
+                    .Select(x =>
+                    {
+                        x.Especie = EspecieNombreSeleccionada;
+                        return x;
+                    })
+                    .ToList();
+
                 TotalRecords = data.TotalRegistros;
             }
         }
@@ -570,49 +544,45 @@
         if (!EspecieSeleccionada.HasValue)
             return;
 
-        CausalSeleccionada = new CausalDto
-        {
-            Codigo = EspecieSeleccionada.Value
-        };
+        ModoEdicion = false;
+        Guardando = false;
 
-        CodigoInput = 0;
         NombreInput = string.Empty;
 
-        ModoEdicion = false;
-        MostrarModal = true;
+        CausalSeleccionada = new CausalDto
+        {
+            CausalId = 0,
+            Codigo = EspecieSeleccionada.Value,
+            Especie = EspecieNombreSeleccionada,
+            Nombre = string.Empty,
+            Activo = true
+        };
 
-        Mensaje = null;
+        MostrarModal = true;
     }
 
 
     private void AbrirModal(CausalDto causal)
     {
+        ModoEdicion = true;
+        Guardando = false;
+
         CausalSeleccionada = causal;
 
-        CodigoInput = causal.Codigo;
         NombreInput = causal.Nombre;
 
-        ModoEdicion = true;
         MostrarModal = true;
-
-        Mensaje = null;
     }
 
 
     private void CerrarModal()
     {
+        if (Guardando)
+            return;
+
         MostrarModal = false;
-
         CausalSeleccionada = null;
-
-        CodigoInput = 0;
         NombreInput = string.Empty;
-    }
-
-
-    private void OnCodigoChange(ChangeEventArgs e)
-    {
-        CodigoInput = int.Parse(e.Value?.ToString() ?? "0");
     }
 
 
@@ -624,24 +594,14 @@
 
     private async Task Guardar()
     {
-        if (CausalSeleccionada == null)
-            return;
-
         if (!EspecieSeleccionada.HasValue)
-        {
-            Mensaje = "Debe seleccionar una especie.";
             return;
-        }
 
-        if (CodigoInput == 0)
-        {
-            Mensaje = "Debe ingresar un código.";
-            return;
-        }
+        var nombre = NombreInput.Trim();
 
-        if (string.IsNullOrWhiteSpace(NombreInput))
+        if (string.IsNullOrWhiteSpace(nombre))
         {
-            Mensaje = "Debe ingresar una causal.";
+            Mensaje = "Debe ingresar el nombre de la causal.";
             return;
         }
 
@@ -652,44 +612,43 @@
 
             if (ModoEdicion)
             {
-                var request = new UpdateCausalRequest
-                {
-                    Nombre = NombreInput.Trim()
-                };
+                if (CausalSeleccionada == null)
+                    return;
 
                 await CausalesService.Update(
                     CausalSeleccionada.CausalId,
-                    request,
-                    CancellationToken.None);
+                    new UpdateCausalRequest
+                    {
+                        Nombre = nombre
+                    });
+
+                CausalSeleccionada.Nombre = nombre;
             }
             else
             {
-                var request = new CreateCausalRequest
-                {
-                    Codigo = EspecieSeleccionada.Value,
-                    Nombre = NombreInput.Trim()
-                };
+                await CausalesService.Create(
+                    new CreateCausalRequest
+                    {
+                        Codigo = EspecieSeleccionada.Value,
+                        Nombre = nombre
+                    });
 
-                await CausalesService.Create(request, CancellationToken.None);
+                PageNumber = 1;
+
+                await Cargar();
             }
 
-            var mensajeExito = ModoEdicion
-                ? "Causal actualizada correctamente."
-                : "Causal creada correctamente.";
-
             CerrarModal();
-
-            await Cargar();
-
-            Mensaje = mensajeExito;
         }
         catch (UnauthorizedAccessException)
         {
             Nav.NavigateTo("/login");
         }
-        catch (Exception ex)
+        catch
         {
-            Mensaje = ex.Message;
+            Mensaje = ModoEdicion
+                ? "No fue posible modificar la causal."
+                : "No fue posible crear la causal.";
         }
         finally
         {
@@ -697,8 +656,7 @@
         }
     }
 
-
-    private async Task EliminarCausal()
+    private async Task CambiarEstado()
     {
         if (CausalSeleccionada == null)
             return;
@@ -708,24 +666,21 @@
             Guardando = true;
             Mensaje = null;
 
+            var nuevoEstado = !CausalSeleccionada.Activo;
+
             await CausalesService.SetActive(
                 CausalSeleccionada.CausalId,
-                false,
-                CancellationToken.None);
+                nuevoEstado);
 
-            CerrarModal();
-
-            await Cargar();
-
-            Mensaje = "Causal eliminada correctamente.";
+            CausalSeleccionada.Activo = nuevoEstado;
         }
         catch (UnauthorizedAccessException)
         {
             Nav.NavigateTo("/login");
         }
-        catch (Exception ex)
+        catch
         {
-            Mensaje = ex.Message;
+            Mensaje = "No fue posible actualizar el estado de la causal.";
         }
         finally
         {

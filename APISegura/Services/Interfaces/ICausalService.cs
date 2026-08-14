@@ -7,16 +7,20 @@ namespace APISegura.Services.Interfaces
     public interface ICausalService
     {
         Task<Result<List<CatalogoDto>>> GetEspeciesAsync(string? filtro,
-                                CancellationToken cancellationToken);
+                    CancellationToken cancellationToken);
         Task<PagedResult<CausalDto>> GetByEspecieAsync(
-            int Codigo,
-            int pageNumber,
-            int pageSize,
-            string? filtro,
-            CancellationToken cancellationToken);
+                    int Codigo,
+                    int pageNumber,
+                    int pageSize,
+                    string? filtro,
+                    CancellationToken cancellationToken);
         Task<Result<int>> CreateAsync(CreateCausalRequest request,
-                                CancellationToken cancellationToken);
+                    CancellationToken cancellationToken);
+
+        Task<Result> UpdateAsync(int causalId,
+                    UpdateCausalRequest request,
+                    CancellationToken cancellationToken);
         Task<Result> SetActiveAsync(int causalId, bool activo, 
-                                CancellationToken cancellationToken);
+                    CancellationToken cancellationToken);
     }
 }
