@@ -12,10 +12,14 @@ namespace APISegura.Controllers
     public class InspeccionesController : ControllerBase
     {
         private readonly IInspeccionService _service;
+        private readonly IFolioService _folioService;
 
-        public InspeccionesController(IInspeccionService service)
+        public InspeccionesController(
+            IInspeccionService service, 
+            IFolioService folioService)
         {
             _service = service;
+            _folioService = folioService;
         }
 
         [HttpPost]
@@ -55,6 +59,22 @@ namespace APISegura.Controllers
 
             if (result.Data is null)
                 return NotFound(result);
+
+            return Ok(result);
+        }
+
+        [HttpGet("folios")]
+        public async Task<IActionResult> BuscarFolios(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? filtro = null,
+        CancellationToken cancellationToken = default)
+        {
+            var result = await _folioService.SearchAsync(
+                pageNumber,
+                pageSize,
+                filtro,
+                cancellationToken);
 
             return Ok(result);
         }

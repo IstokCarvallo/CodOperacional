@@ -20,7 +20,7 @@ namespace APISegura.Common.Validators
             }
         }
 
-        public static string Normalize(string email)
+        public static string? Normalize(string email)
         {
             return email?.Trim().ToLower();
         }

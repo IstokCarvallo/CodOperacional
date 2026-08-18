@@ -185,8 +185,17 @@ namespace APISegura.Repositories
                 typeof(bool));
 
             table.Columns.Add(
-                "causal_id",
+                "causal1_id",
                 typeof(int));
+
+            table.Columns.Add(
+                "causal2_id",
+                typeof(int));
+
+            table.Columns.Add(
+                "causal3_id",
+                typeof(int));
+
 
             table.Columns.Add(
                 "observacion",
@@ -210,7 +219,9 @@ namespace APISegura.Repositories
                     folio.DefeNumero,
                     folio.Nota,
                     folio.EsSupermercado,
-                    DbValueHelper.DbValue(folio.CausalId),
+                    DbValueHelper.DbValue(folio.Causal1Id),
+                    DbValueHelper.DbValue(folio.Causal2Id),
+                    DbValueHelper.DbValue(folio.Causal3Id),
                     DbValueHelper.DbValue(folio.Observacion),
                     DbValueHelper.DbValue(folio.PromedioFirmeza),
                     DbValueHelper.DbValue(folio.PromedioBrix));

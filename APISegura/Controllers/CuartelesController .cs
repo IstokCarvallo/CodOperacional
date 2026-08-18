@@ -1,5 +1,5 @@
 ﻿using APISegura.Dtos.Cuarteles;
-using APISegura.Services;
+using APISegura.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +10,9 @@ namespace APISegura.Controllers
     [Authorize]
     public class CuartelesController : Controller
     {
-        private readonly CuartelService _service;
+        private readonly ICuartelService _service;
 
-        public CuartelesController(CuartelService service)
+        public CuartelesController(ICuartelService service)
         {
             _service = service;
         }

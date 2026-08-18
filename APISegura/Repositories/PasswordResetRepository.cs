@@ -7,7 +7,7 @@ namespace APISegura.Repositories
 {
     public class PasswordResetRepository : IPasswordResetRepository
     {
-        private readonly string _connectionString;
+        private readonly string? _connectionString;
         private readonly TokenService _tokenService;
 
         public PasswordResetRepository(IConfiguration config, 

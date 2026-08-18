@@ -3,10 +3,11 @@ using APISegura.Common.Validators;
 using APISegura.Dtos.Auth;
 using APISegura.Entities;
 using APISegura.Repositories.Interfaces;
+using APISegura.Services.Interfaces;
 
 namespace APISegura.Services;
 
-public class AuthService
+public class AuthService :IAuthService
 {
     private readonly IUserRepository _repo;
     private readonly IRefreshTokenRepository _refreshRepo;

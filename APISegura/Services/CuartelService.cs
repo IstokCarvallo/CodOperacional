@@ -2,10 +2,11 @@
 using APISegura.Dtos.Common;
 using APISegura.Dtos.Cuarteles;
 using APISegura.Repositories.Interfaces;
+using APISegura.Services.Interfaces;
 
 namespace APISegura.Services
 {
-    public class CuartelService
+    public class CuartelService : ICuartelService
     {
         private readonly ICuartelRepository _repo;
         private readonly IHttpContextAccessor _http;

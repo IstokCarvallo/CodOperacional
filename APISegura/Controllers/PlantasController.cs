@@ -1,5 +1,5 @@
 ﻿using APISegura.Dtos.Planta;
-using APISegura.Services;
+using APISegura.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,9 +10,9 @@ namespace APISegura.Controllers
     [Authorize]
     public class PlantasController : Controller
     {
-        private readonly PlantaService _service;
+        private readonly IPlantaService _service;
 
-        public PlantasController(PlantaService service)
+        public PlantasController(IPlantaService service)
         {
             _service = service;
         }

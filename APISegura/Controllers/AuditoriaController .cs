@@ -1,4 +1,4 @@
-﻿using APISegura.Services;
+﻿using APISegura.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +9,9 @@ namespace APISegura.Controllers
     [Authorize(Roles = "Admin")]
     public class AuditoriaController : ControllerBase
     {
-        private readonly AuditoriaService _service;
+        private readonly IAuditoriaService _service;
 
-        public AuditoriaController(AuditoriaService service)
+        public AuditoriaController(IAuditoriaService service)
         {
             _service = service;
         }

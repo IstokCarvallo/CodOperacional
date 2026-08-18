@@ -6,7 +6,7 @@ namespace APISegura.Repositories
 {
     public class AuditoriaRepository : IAuditoriaRepository
     {
-        private readonly string _connectionString;
+        private readonly string? _connectionString;
 
         public AuditoriaRepository(IConfiguration config)
         {

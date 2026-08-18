@@ -1,10 +1,11 @@
 ﻿using APISegura.Common;
 using APISegura.Dtos.Common;
 using APISegura.Repositories.Interfaces;
+using APISegura.Services.Interfaces;
 
 namespace APISegura.Services
 {
-    public class AuditoriaService
+    public class AuditoriaService : IAuditoriaService
     {
         private readonly IAuditoriaRepository _repo;
 

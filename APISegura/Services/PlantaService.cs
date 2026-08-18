@@ -3,10 +3,11 @@ using APISegura.Dtos.Common;
 using APISegura.Dtos.Planta;
 using APISegura.Entities;
 using APISegura.Repositories.Interfaces;
+using APISegura.Services.Interfaces;
 
 namespace APISegura.Services
 {
-    public class PlantaService
+    public class PlantaService : IPlantaService
     {
         private readonly IPlantaRepository _repository;
         private readonly IHttpContextAccessor _httpContext;

@@ -16,7 +16,9 @@
 
         public bool EsSupermercado { get; set; }
 
-        public int? CausalId { get; set; }
+        public int? Causal1Id { get; set; }
+        public int? Causal2Id { get; set; }
+        public int? Causal3Id { get; set; }
 
         public string? Observacion { get; set; }
 
