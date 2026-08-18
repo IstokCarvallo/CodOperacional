@@ -105,7 +105,8 @@ namespace APISegura.Repositories
                 new
                 {
                     CausalId = causalId,
-                    request.Nombre
+                    request.Nombre,
+                    Usuario = usuario
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: ct);
@@ -124,7 +125,8 @@ namespace APISegura.Repositories
                 new
                 {
                     CausalId = causalId,
-                    Activo = activo
+                    Activo = activo,
+                    Usuario = usuario
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: ct);

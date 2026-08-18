@@ -30,32 +30,36 @@
             </p>
 
             <div class="filters-row">
-
                 <!-- FILTROS -->
                 <div class="causal-filters">
 
                     <!-- ESPECIE -->
                     <div class="species-selector">
+                        <label class="filter-label">
+                            <i class="fa-solid fa-leaf"></i>
+                            Especie
+                        </label>
 
-                        <i class="fa-solid fa-leaf"></i>
+                        <div class="species-select-wrapper">
+                            <select class="search-input species-select"
+                                    value="@EspecieSeleccionada"
+                                    @onchange="OnEspecieChange">
 
-                        <select class="search-input"
-                                value="@EspecieSeleccionada"
-                                @onchange="OnEspecieChange">
-
-                            <option value="">
-                                Seleccione una especie...
-                            </option>
-
-                            @foreach (var especie in Especies)
-                            {
-                                <option value="@especie.Codigo">
-                                    @especie.Codigo - @especie.Nombre
+                                <option value="">
+                                    Seleccione una especie...
                                 </option>
-                            }
 
-                        </select>
+                                @foreach (var especie in Especies)
+                                {
+                                    <option value="@especie.Codigo">
+                                        @especie.Codigo - @especie.Nombre
+                                    </option>
+                                }
 
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down species-select-arrow"></i>
+                        </div>
                     </div>
 
                     <!-- BUSQUEDA -->
@@ -577,9 +581,6 @@
 
     private void CerrarModal()
     {
-        if (Guardando)
-            return;
-
         MostrarModal = false;
         CausalSeleccionada = null;
         NombreInput = string.Empty;
@@ -673,6 +674,7 @@
                 nuevoEstado);
 
             CausalSeleccionada.Activo = nuevoEstado;
+            CerrarModal();
         }
         catch (UnauthorizedAccessException)
         {

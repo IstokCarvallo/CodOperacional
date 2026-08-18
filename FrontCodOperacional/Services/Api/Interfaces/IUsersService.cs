@@ -9,6 +9,8 @@ namespace FrontCodOperacional.Services.Api.Interfaces
 
         Task<UserDetailDto?> GetById(int id, CancellationToken ct);
 
+        Task Register(RegisterRequest request, CancellationToken ct);
+
         Task Update(int id, UpdateUserRequest request, CancellationToken ct);
 
         Task SetStatus(int id, SetUserStatusRequest request, CancellationToken ct);

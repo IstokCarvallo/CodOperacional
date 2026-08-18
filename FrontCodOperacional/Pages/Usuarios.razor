@@ -23,10 +23,27 @@
         <p>
             Gestión de usuarios, roles y estados de acceso.
         </p>
+
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input class="search-input"
+                   placeholder="Buscar por usuario, nombre o email..."
+                   value="@Filtro"
+                   @oninput="OnBuscar" />
+            @if (IsLoading)
+            {
+                <i class="fa-solid fa-spinner fa-spin search-loading"></i>
+            }
+        </div>
     </div>
 
-
     <div class="header-actions">
+        <button class="primary-btn"
+                @onclick="AbrirNuevoUsuario">
+            <i class="fa-solid fa-user-plus"></i>
+            Nuevo Usuario
+        </button>
+
         <div class="records-card">
             <span class="label">
                 Registros
@@ -40,34 +57,15 @@
 </div>
 
 
-    <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-
-        <input class="search-input"
-               placeholder="Buscar por usuario, nombre o email..."
-               value="@Filtro"
-               @oninput="OnBuscar" />
-
-        @if (IsLoading)
-        {
-            <i class="fa-solid fa-spinner fa-spin search-loading"></i>
-        }
-    </div>
-
-
 @if (!string.IsNullOrWhiteSpace(Mensaje))
 {
     <div class="message-banner">
-
         <i class="fa-solid fa-circle-info"></i>
-
         <span>
             @Mensaje
         </span>
-
     </div>
 }
-
 
 <div class="table-card">
     @if (IsLoading)
@@ -125,7 +123,7 @@
                     {
                         @foreach (var usuario in ListaUsuarios)
                         {
-                            <tr>
+                            <tr @onclick="() => AbrirModal(usuario)">
                                 <td>
                                     <span class="table-code">
                                         @usuario.Username
@@ -171,12 +169,10 @@
             </table>
         </div>
 
-
         <div class="table-footer">
             <button class="pagination-btn"
                     @onclick="Anterior"
                     disabled="@(PageNumber == 1 || IsLoading)">
-
                 <i class="fa-solid fa-chevron-left"></i>
                 Anterior
             </button>
@@ -198,6 +194,256 @@
     }
 </div>
 
+@if (MostrarModal)
+{
+    <div class="modal-overlay">
+        <div class="modern-modal">
+            <div class="modal-header">
+                <div>
+                    <h2>
+                        @(EsNuevoUsuario
+                            ? "Nuevo Usuario"
+                            : "Editar Usuario")
+                    </h2>
+
+                    <p>
+                        @(EsNuevoUsuario
+                            ? "Ingrese la información del nuevo usuario."
+                            : "Actualización de información del usuario.")
+                    </p>
+                </div>
+
+                <button class="close-btn"
+                        @onclick="CerrarModal"
+                        disabled="@Guardando">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+
+            <div class="modal-body">
+                @if (EsNuevoUsuario)
+                {
+                    <div class="form-group">
+                        <label>
+                            Usuario
+                        </label>
+
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user"></i>
+                            <input class="form-control"
+                                   placeholder="Ingrese usuario"
+                                   @bind="NuevoUsuario.Username" />
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>
+                            Nombre
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-id-card"></i>
+                            <input class="form-control"
+                                   placeholder="Ingrese nombre"
+                                   @bind="NuevoUsuario.Nombre" />
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>
+                            Email
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input class="form-control"
+                                   type="email"
+                                   placeholder="Ingrese email"
+                                   @bind="NuevoUsuario.Email" />
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>
+                            Contraseña
+                        </label>
+
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input class="form-control"
+                                   type="password"
+                                   placeholder="Ingrese contraseña"
+                                   @bind="NuevoUsuario.Password" />
+                        </div>
+                    </div>
+
+
+                    <div class="user-role-group">
+
+                        <label class="filter-label">
+                            <i class="fa-solid fa-user-shield"></i>
+                            Rol
+                        </label>
+
+                        <div class="user-role-select-wrapper">
+
+                            <select class="search-input user-role-select"
+                                    @bind="NuevoUsuario.Role">
+
+                                @foreach (var role in UserRoles.All)
+                                {
+                                    <option value="@role">
+                                        @role
+                                    </option>
+                                }
+
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down user-role-select-arrow"></i>
+
+                        </div>
+
+                    </div>
+                }
+                else if (UsuarioSeleccionado != null)
+                {
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span>
+                                Usuario
+                            </span>
+
+                            <strong>
+                                @UsuarioSeleccionado.Username
+                            </strong>
+                        </div>
+
+                        <div class="detail-item">
+                            <span>
+                                Estado
+                            </span>
+
+                            <strong>
+                                @(UsuarioSeleccionado.Active
+                                    ? "Activo"
+                                    : "Inactivo")
+                            </strong>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>
+                            Nombre
+                        </label>
+
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-id-card"></i>
+                            <input class="form-control"
+                                   @bind="UsuarioEditando.Nombre" />
+
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>
+                            Email
+                        </label>
+
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input class="form-control"
+                                   type="email"
+                                   @bind="UsuarioEditando.Email" />
+                        </div>
+                    </div>
+
+
+                    <div class="user-role-group">
+
+                        <label class="filter-label">
+                            <i class="fa-solid fa-user-shield"></i>
+                            Rol
+                        </label>
+
+                        <div class="user-role-select-wrapper">
+
+                            <select class="search-input user-role-select"
+                                    @bind="UsuarioEditando.Role">
+
+                                @foreach (var role in UserRoles.All)
+                                {
+                                    <option value="@role">
+                                        @role
+                                    </option>
+                                }
+
+                            </select>
+
+                            <i class="fa-solid fa-chevron-down user-role-select-arrow"></i>
+
+                        </div>
+
+                    </div>
+                }
+            </div>
+
+
+            <div class="modal-footer">
+                <button class="secondary-btn"
+                        @onclick="CerrarModal"
+                        disabled="@Guardando">
+                    Cancelar
+                </button>
+
+
+                @if (!EsNuevoUsuario && UsuarioSeleccionado != null)
+                {
+                    <button class="secondary-btn"
+                            @onclick="CambiarEstado"
+                            disabled="@Guardando">
+
+                        @if (UsuarioSeleccionado.Active)
+                        {
+                            <i class="fa-solid fa-user-slash"></i>
+                            <span>Desactivar</span>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-user-check"></i>
+                            <span>Activar</span>
+                        }
+                    </button>
+                }
+
+
+                <button class="primary-btn"
+                        @onclick="(EsNuevoUsuario ? CrearUsuario : ActualizarUsuario)"
+                        disabled="@Guardando">
+                    @if (Guardando)
+                    {
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                        <span>Guardando...</span>
+                    }
+                    else
+                    {
+                        <i class="fa-solid fa-floppy-disk"></i>
+
+                        <span>
+                            @(EsNuevoUsuario
+                                ? "Crear Usuario"
+                                : "Guardar")
+                        </span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
 @code 
 {
     private List<UserDto> ListaUsuarios = new();
@@ -211,6 +457,19 @@
     private CancellationTokenSource? _searchCts;
     private const int SearchDelay = 300;
     private string _ultimoFiltro = string.Empty;
+
+    private bool MostrarModal = false;
+    private bool EsNuevoUsuario = false;
+    private bool Guardando = false;
+
+    private UserDto? UsuarioSeleccionado;
+
+    private UpdateUserRequest UsuarioEditando = new();
+
+    private RegisterRequest NuevoUsuario = new()
+    {
+        Role = "User"
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -300,5 +559,142 @@
 
         PageNumber--;
         await Cargar();
+    }
+
+    private void AbrirModal(UserDto usuario)
+    {
+        UsuarioSeleccionado = usuario;
+
+        UsuarioEditando = new UpdateUserRequest
+        {
+            Nombre = usuario.Nombre,
+            Email = usuario.Email,
+            Role = usuario.Role
+        };
+
+        EsNuevoUsuario = false;
+        MostrarModal = true;
+        Mensaje = null;
+    }
+
+    private void AbrirNuevoUsuario()
+    {
+        UsuarioSeleccionado = null;
+
+        NuevoUsuario = new RegisterRequest
+        {
+            Role = "User"
+        };
+
+        EsNuevoUsuario = true;
+        MostrarModal = true;
+        Mensaje = null;
+    }
+
+    private void CerrarModal()
+    {
+        MostrarModal = false;
+
+        UsuarioSeleccionado = null;
+
+        EsNuevoUsuario = false;
+
+        Guardando = false;
+    }
+
+    private async Task CrearUsuario()
+    {
+        try
+        {
+            Guardando = true;
+            Mensaje = null;
+
+            await UsersService.Register(NuevoUsuario, CancellationToken.None);
+
+            CerrarModal();
+
+            PageNumber = 1;
+
+            await Cargar();
+
+            Mensaje = "Usuario creado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            Mensaje = ex.Message;
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+
+    private async Task ActualizarUsuario()
+    {
+        if (UsuarioSeleccionado == null)
+            return;
+
+        try
+        {
+            Guardando = true;
+            Mensaje = null;
+
+            await UsersService.Update(
+                UsuarioSeleccionado.Id,
+                UsuarioEditando,
+                CancellationToken.None);
+
+            CerrarModal();
+
+            await Cargar();
+
+            Mensaje = "Usuario actualizado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            Mensaje = ex.Message;
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+
+    private async Task CambiarEstado()
+    {
+        if (UsuarioSeleccionado == null)
+            return;
+
+        try
+        {
+            Guardando = true;
+            Mensaje = null;
+
+            var nuevoEstado = !UsuarioSeleccionado.Active;
+
+            await UsersService.SetStatus(
+                UsuarioSeleccionado.Id,
+                new SetUserStatusRequest
+                {
+                    Active = nuevoEstado
+                },
+                CancellationToken.None);
+
+            CerrarModal();
+
+            await Cargar();
+
+            Mensaje = nuevoEstado
+                ? "Usuario activado correctamente."
+                : "Usuario desactivado correctamente.";
+        }
+        catch (Exception ex)
+        {
+            Mensaje = ex.Message;
+        }
+        finally
+        {
+            Guardando = false;
+        }
     }
 }

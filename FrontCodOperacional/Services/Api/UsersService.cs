@@ -34,6 +34,13 @@ namespace FrontCodOperacional.Services.Api
             return await _http.GetFromJsonAsync<UserDetailDto>($"users/{id}", ct);
         }
 
+        public async Task Register(RegisterRequest request, CancellationToken ct)
+        {
+            var response = await _http.PostAsJsonAsync($"Auth/register", request, ct);
+
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task Update(int id, UpdateUserRequest request, CancellationToken ct)
         {
             var response = await _http.PutAsJsonAsync($"users/{id}", request, ct);
