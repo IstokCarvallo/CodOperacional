@@ -3,6 +3,7 @@
 
 @using FrontCodOperacional.Models.Dashboard
 @using FrontCodOperacional.Services.Api
+@using System.Globalization
 
 @inject DashboardApiService DashboardService
 
@@ -237,7 +238,7 @@
 
                             <td>
                                 <strong>
-                                    @item.CantidadCajas
+                                    @item.CantidadCajas.ToString("N0", CultureInfo.GetCultureInfo("es-CL"))
                                 </strong>
                             </td>
                         </tr>

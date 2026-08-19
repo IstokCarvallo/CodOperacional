@@ -13,11 +13,11 @@ namespace APISegura.Controllers
     public class UsersController : Controller
     {
         private readonly IUserService _service;
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
 
         public UsersController(
             IUserService service,
-            AuthService authService)
+            IAuthService authService)
         {
             _service = service;
             _authService = authService;

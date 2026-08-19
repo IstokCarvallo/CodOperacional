@@ -119,7 +119,6 @@
                                     </td>
 
                                     <td>
-
                                         @if (string.IsNullOrWhiteSpace(p.CodigoOperacional))
                                         {
                                             <span class="empty-badge">
@@ -132,15 +131,11 @@
                                                 @p.CodigoOperacional
                                             </span>
                                         }
-
                                     </td>
-
                                     <td>
-
                                         @(p.FechaUltimaActualizacion.HasValue
                                             ? p.FechaUltimaActualizacion.Value.ToString("dd-MM-yyyy HH:mm")
                                             : "-")
-
                                     </td>
 
                                     <td class="row-arrow">

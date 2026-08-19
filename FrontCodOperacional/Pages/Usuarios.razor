@@ -86,19 +86,15 @@
                         <th>
                             Usuario
                         </th>
-
                         <th>
                             Nombre
                         </th>
-
                         <th>
                             Rol
                         </th>
-
                         <th>
                             Estado
                         </th>
-
                         <th class="action-column">
                         </th>
                     </tr>
@@ -130,18 +126,15 @@
                                     </span>
                                 </td>
 
-
                                 <td>
                                     @usuario.Nombre
                                 </td>
-
 
                                 <td>
                                     <span class="code-badge">
                                         @usuario.Role
                                     </span>
                                 </td>
-
 
                                 <td>
                                     @if (usuario.Active)
@@ -152,12 +145,11 @@
                                     }
                                     else
                                     {
-                                        <span class="empty-badge">
+                                        <span class="code-badge-inactive">
                                             Inactivo
                                         </span>
                                     }
                                 </td>
-
 
                                 <td class="row-arrow">
                                     <i class="fa-solid fa-chevron-right"></i>
@@ -220,7 +212,6 @@
                 </button>
             </div>
 
-
             <div class="modal-body">
                 @if (EsNuevoUsuario)
                 {
@@ -237,7 +228,6 @@
                         </div>
                     </div>
 
-
                     <div class="form-group">
                         <label>
                             Nombre
@@ -249,7 +239,6 @@
                                    @bind="NuevoUsuario.Nombre" />
                         </div>
                     </div>
-
 
                     <div class="form-group">
                         <label>
@@ -263,7 +252,6 @@
                                    @bind="NuevoUsuario.Email" />
                         </div>
                     </div>
-
 
                     <div class="form-group">
                         <label>
@@ -281,7 +269,6 @@
 
 
                     <div class="user-role-group">
-
                         <label class="filter-label">
                             <i class="fa-solid fa-user-shield"></i>
                             Rol
@@ -380,17 +367,11 @@
                                         @role
                                     </option>
                                 }
-
                             </select>
-
-                            <i class="fa-solid fa-chevron-down user-role-select-arrow"></i>
-
                         </div>
-
                     </div>
                 }
             </div>
-
 
             <div class="modal-footer">
                 <button class="secondary-btn"
@@ -398,7 +379,6 @@
                         disabled="@Guardando">
                     Cancelar
                 </button>
-
 
                 @if (!EsNuevoUsuario && UsuarioSeleccionado != null)
                 {
@@ -418,7 +398,6 @@
                         }
                     </button>
                 }
-
 
                 <button class="primary-btn"
                         @onclick="(EsNuevoUsuario ? CrearUsuario : ActualizarUsuario)"

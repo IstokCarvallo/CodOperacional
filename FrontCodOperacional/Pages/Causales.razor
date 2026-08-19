@@ -176,7 +176,18 @@
                                     </td>
 
                                     <td>
-                                        @(causal.Activo ? "Activo" : "Inactivo")
+                                        @if (causal.Activo)
+                                        {
+                                            <span class="code-badge">
+                                                Activo
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="code-badge-inactive">
+                                                Inactivo
+                                            </span>
+                                        }
                                     </td>
 
                                     <td class="row-arrow">
