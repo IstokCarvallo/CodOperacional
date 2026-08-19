@@ -57,27 +57,56 @@
         <div class="filters-grid">
             <div class="filter-group">
                 <label>Desde</label>
-                <InputDate @bind-Value="Desde" class="form-control-modern" />
+
+                <InputDate @bind-Value="Desde"
+                           class="date-input" />
             </div>
 
             <div class="filter-group">
                 <label>Hasta</label>
-                <InputDate @bind-Value="Hasta"class="form-control-modern" />
+
+                <InputDate @bind-Value="Hasta"
+                           class="date-input" />
             </div>
 
             <div class="filter-group">
                 <label>Usuario</label>
-                <InputText @bind-Value="Usuario" class="form-control-modern" placeholder="Usuario..." />
+
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-user"></i>
+
+                    <InputText @bind-Value="Usuario"
+                               placeholder="Usuario..." />
+                </div>
             </div>
 
             <div class="filter-group">
                 <label>Entidad</label>
-                <InputText @bind-Value="Entidad" class="form-control-modern" placeholder="Entidad..." />
+
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-database"></i>
+
+                    <InputText @bind-Value="Entidad"
+                               placeholder="Entidad..." />
+                </div>
             </div>
 
             <div class="filter-group">
                 <label>Acción</label>
-                <InputText @bind-Value="Accion" class="form-control-modern" placeholder="Acción..." />
+
+                <div class="audit-select-wrapper">
+                    <select class="audit-select"
+                            @bind="Accion">
+
+                        <option value="">Todas las acciones</option>
+                        <option value="CREATE">CREATE</option>
+                        <option value="UPDATE">UPDATE</option>
+                        <option value="DELETE">DELETE</option>
+
+                    </select>
+
+                    <i class="fa-solid fa-chevron-down audit-select-arrow"></i>
+                </div>
             </div>
 
             <div class="filter-actions">

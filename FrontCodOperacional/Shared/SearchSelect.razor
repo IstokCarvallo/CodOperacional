@@ -1,55 +1,67 @@
 ﻿@typeparam TItem
 
-<div class="position-relative">
+<div class="search-select">
 
-    <input class="form-control pe-5"
-           placeholder="@Placeholder"
-           value="@SearchText"
-           @oninput="OnInputChange" 
-           @onkeydown="OnKeyDown" />
+    <div class="search-select-input-wrapper">
 
-    <span class="position-absolute top-50 end-0 translate-middle-y me-3">
+        <input class="search-select-input"
+               placeholder="@Placeholder"
+               value="@SearchText"
+               @oninput="OnInputChange"
+               @onkeydown="OnKeyDown" />
 
-        @if (Loading)
-        {
-            <span>🔄</span>
-        }
-        else if (!string.IsNullOrWhiteSpace(SearchText))
-        {
-            <span>🔍</span> 
-        }
+        <span class="search-select-indicator">
 
-    </span>
+            @if (Loading)
+            {
+                <i class="fa-solid fa-spinner fa-spin"></i>
+            }
+            else if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                <i class="fa-solid fa-magnifying-glass"></i>
+            }
+
+        </span>
+
+    </div>
 
     @if (Loading)
     {
-        <div class="small text-muted mt-1">Buscando...</div>
+        <div class="search-select-status">
+            Buscando...
+        </div>
     }
 
     @if (Items.Any())
     {
-        <ul class="list-group position-absolute w-100 shadow"
-            style="z-index:1000; max-height:250px; overflow:auto;">
-            
+        <ul class="search-select-results">
+
             @for (int i = 0; i < Items.Count; i++)
             {
                 var item = Items[i];
 
-                <li class="list-group-item list-group-item-action @(i == IndexActivo ? "active" : "")"
-                    style="cursor:pointer"
+                <li class="search-select-item @(i == IndexActivo ? "active" : "")"
                     @onclick="() => SelectItem(item)">
+
                     @ItemText(item)
+
                 </li>
             }
+
         </ul>
     }
+
     @if (!Loading && SinResultados)
     {
-        <div class="list-group position-absolute w-100 shadow"
-             style="z-index:1000;">
-            <div class="list-group-item text-muted">
-                ❌ Sin resultados para "@SearchText"
+        <div class="search-select-results">
+
+            <div class="search-select-empty">
+                <i class="fa-regular fa-folder-open"></i>
+                <span>
+                    Sin resultados para "@SearchText"
+                </span>
             </div>
+
         </div>
     }
 
@@ -57,16 +69,26 @@
 
 @code {
 
-    [Parameter] public Func<string, Task<List<TItem>>> SearchMethod { get; set; } = default!;
-    [Parameter] public Func<TItem, string> ItemText { get; set; } = default!;
-    [Parameter] public EventCallback<TItem> OnSelected { get; set; }
+    [Parameter]
+    public Func<string, Task<List<TItem>>> SearchMethod { get; set; } = default!;
 
-    [Parameter] public string Placeholder { get; set; } = "Buscar...";
+    [Parameter]
+    public Func<TItem, string> ItemText { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<TItem> OnSelected { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "Buscar...";
 
     private List<TItem> Items = new();
+
     private string SearchText = "";
+
     private bool Loading = false;
+
     private bool SinResultados = false;
+
     private int IndexActivo = -1;
 
     private CancellationTokenSource? _cts;
@@ -76,6 +98,8 @@
         SearchText = e.Value?.ToString() ?? "";
 
         _cts?.Cancel();
+        _cts?.Dispose();
+
         _cts = new CancellationTokenSource();
 
         try
@@ -86,16 +110,22 @@
             {
                 Items.Clear();
                 SinResultados = false;
+                IndexActivo = -1;
+
                 return;
             }
 
             Loading = true;
 
             Items = await SearchMethod(SearchText);
+
             IndexActivo = -1;
+
             SinResultados = !Items.Any();
         }
-        catch (TaskCanceledException) { }
+        catch (TaskCanceledException)
+        {
+        }
         finally
         {
             Loading = false;
@@ -105,15 +135,12 @@
 
     private async Task SelectItem(TItem item)
     {
-        // if (SearchText.Length < 3)
-        // {
-        //     Items.Clear();
-        //     return;
-        // }
-
         SearchText = ItemText(item);
+
         Items.Clear();
+
         SinResultados = false;
+
         IndexActivo = -1;
 
         await OnSelected.InvokeAsync(item);
@@ -127,24 +154,43 @@
         switch (e.Key)
         {
             case "ArrowDown":
-                IndexActivo = (IndexActivo + 1) % Items.Count;
+
+                IndexActivo =
+                    (IndexActivo + 1) % Items.Count;
+
                 break;
 
             case "ArrowUp":
-                IndexActivo = IndexActivo <= 0 ? Items.Count - 1 : IndexActivo - 1;
+
+                IndexActivo =
+                    IndexActivo <= 0
+                        ? Items.Count - 1
+                        : IndexActivo - 1;
+
                 break;
 
             case "Enter":
-                if (IndexActivo >= 0 && IndexActivo < Items.Count)
+
+                if (IndexActivo >= 0 &&
+                    IndexActivo < Items.Count)
+                {
                     await SelectItem(Items[IndexActivo]);
+                }
                 else
+                {
                     await SelectItem(Items.First());
+                }
+
                 break;
 
             case "Escape":
+
                 Items.Clear();
+
                 SinResultados = false;
+
                 IndexActivo = -1;
+
                 break;
         }
     }

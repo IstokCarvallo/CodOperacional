@@ -85,15 +85,14 @@
         color: var(--text-main);
     }
 
-    .filters-header p {
-        margin: 0;
+    .filters-header span {
         color: var(--text-secondary);
         font-size: var(--text-sm);
     }
 
 .filters-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 16px;
     align-items: end;
 }
@@ -107,6 +106,10 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+
+/* =========================================
+   INPUTS
+========================================= */
 
 .filter-group input {
     width: 100%;
@@ -125,6 +128,60 @@
         border-color: var(--primary);
         box-shadow: 0 0 0 4px rgba(79,70,229,0.10);
     }
+
+/* =========================================
+   SELECTOR DE ACCIÓN
+========================================= */
+
+.audit-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.audit-select {
+    width: 100%;
+    height: 44px;
+    padding: 0 40px 0 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    background: var(--bg);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: var(--text-sm);
+    outline: none;
+    transition: all 0.18s ease;
+}
+
+    .audit-select:hover {
+        border-color: var(--primary);
+    }
+
+    .audit-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79,70,229,0.10);
+    }
+
+    .audit-select option {
+        background: var(--bg-card);
+        color: var(--text-main);
+    }
+
+.audit-select-arrow {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+}
+
+/* =========================================
+   FILTER ACTIONS
+========================================= */
 
 .filter-actions {
     display: flex;
@@ -166,7 +223,7 @@
 /* SEARCH */
 
 .btn-search {
-    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    background: linear-gradient( 135deg, var(--primary), var(--primary-hover) );
     color: white;
     box-shadow: 0 10px 20px rgba(79,70,229,0.20);
 }
@@ -267,10 +324,10 @@
         }
 
 /* =========================================
-   BADGES
+   AUDIT BADGE
 ========================================= */
 
-.badge-action {
+.audit-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -305,9 +362,9 @@
    LOADING
 ========================================= */
 
-.spinner {
-    width: 16px;
-    height: 16px;
+.spinner-sm {
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     border: 2px solid rgba(255,255,255,0.35);
     border-top-color: white;
@@ -315,7 +372,6 @@
 }
 
 @keyframes spin {
-
     to {
         transform: rotate(360deg);
     }
@@ -329,6 +385,10 @@
     text-align: center;
     padding: 40px 20px;
     color: var(--text-secondary);
+}
+
+.empty-state {
+    text-align: center;
 }
 
 /* =========================================
