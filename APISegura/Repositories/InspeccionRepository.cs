@@ -76,6 +76,72 @@ namespace APISegura.Repositories
             return Result<long>.Ok(inspeccionId);
         }
 
+        public async Task<Result<long>> UpdateAsync(
+            long inspeccionId,
+            CreateInspeccionRequest request,
+            int usuarioId,
+            CancellationToken cancellationToken)
+        {
+            using var connection = new SqlConnection(
+                _config.GetConnectionString("DefaultConnection"));
+
+            var folios = CreateFoliosDataTable(request.Folios);
+            var etiquetas = CreateEtiquetasDataTable(request.EtiquetasTAG);
+
+            var parameters = new DynamicParameters();
+
+            parameters.Add(
+                "@InspeccionId",
+                inspeccionId,
+                DbType.Int64);
+
+            parameters.Add(
+                "@FechaInspeccion",
+                request.FechaInspeccion,
+                DbType.DateTime2);
+
+            parameters.Add(
+                "@FechaCorreo",
+                request.FechaCorreo,
+                DbType.DateTime2);
+
+            parameters.Add(
+                "@NumeroCorreo",
+                request.NumeroCorreo,
+                DbType.String);
+
+            parameters.Add(
+                "@PateTempor",
+                request.PateTempor,
+                DbType.Int32);
+
+            parameters.Add(
+                "@UsuarioId",
+                usuarioId,
+                DbType.Int32);
+
+            parameters.Add(
+                "@Folios",
+                folios.AsTableValuedParameter(
+                    "dbo.InspeccionFolioType"));
+
+            parameters.Add(
+                "@EtiquetasTAG",
+                etiquetas.AsTableValuedParameter(
+                    "dbo.InspeccionEtiquetaTAGType"));
+
+            var command = new CommandDefinition(
+                "dbo.SP_Inspecciones_Update",
+                parameters,
+                commandType: CommandType.StoredProcedure,
+                cancellationToken: cancellationToken);
+
+            var result = await connection.QuerySingleAsync<long>(
+                command);
+
+            return Result<long>.Ok(result);
+        }
+
         public async Task<Result<InspeccionDto?>> GetByIdAsync(
             long inspeccionId,
             CancellationToken cancellationToken)

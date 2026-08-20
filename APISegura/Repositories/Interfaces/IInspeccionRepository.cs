@@ -11,6 +11,12 @@ namespace APISegura.Repositories.Interfaces
             int usuarioId,
             CancellationToken cancellationToken);
 
+        Task<Result<long>> UpdateAsync(
+            long inspeccionId,
+            CreateInspeccionRequest request,
+            int usuarioId,
+            CancellationToken cancellationToken);
+
         Task<Result<InspeccionDto?>> GetByIdAsync(
             long inspeccionId,
             CancellationToken cancellationToken);

@@ -14,9 +14,9 @@
 
         public int UsuarioId { get; set; }
 
-        public DateTime FechaCreacion { get; set; }
+        public DateTime created_at { get; set; }
 
-        public DateTime? FechaModificacion { get; set; }
+        public DateTime? updated_at { get; set; }
 
         public List<InspeccionFolioDto> Folios { get; set; }
             = new();

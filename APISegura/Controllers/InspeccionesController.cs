@@ -47,6 +47,36 @@ namespace APISegura.Controllers
             return Ok(result);
         }
 
+        [HttpPut("{inspeccionId:long}")]
+        public async Task<IActionResult> Update(
+            long inspeccionId,
+            [FromBody] CreateInspeccionRequest request,
+            CancellationToken cancellationToken)
+        {
+            var usuarioIdClaim =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(usuarioIdClaim, out var usuarioId))
+            {
+                return Unauthorized(new
+                {
+                    Success = false,
+                    Error = "No fue posible identificar al usuario autenticado."
+                });
+            }
+
+            var result = await _service.UpdateAsync(
+                inspeccionId,
+                request,
+                usuarioId,
+                cancellationToken);
+
+            if (!result.Success)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
         [HttpGet("{inspeccionId:long}")]
         public async Task<IActionResult> GetById(
             long inspeccionId,

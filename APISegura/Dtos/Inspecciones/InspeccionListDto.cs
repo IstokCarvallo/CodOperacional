@@ -14,6 +14,6 @@
 
         public int UsuarioId { get; set; }
 
-        public DateTime FechaCreacion { get; set; }
+        public DateTime created_at { get; set; }
     }
 }

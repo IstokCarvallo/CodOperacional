@@ -27,6 +27,19 @@ namespace APISegura.Services
                 cancellationToken);
         }
 
+        public async Task<Result<long>> UpdateAsync(
+            long inspeccionId,
+            CreateInspeccionRequest request,
+            int usuarioId,
+            CancellationToken cancellationToken)
+        {
+            return await _repository.UpdateAsync(
+                inspeccionId,
+                request,
+                usuarioId,
+                cancellationToken);
+        }
+
         public Task<Result<InspeccionDto?>> GetByIdAsync(
             long inspeccionId,
             CancellationToken cancellationToken)
