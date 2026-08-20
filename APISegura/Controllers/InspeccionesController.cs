@@ -113,9 +113,11 @@ namespace APISegura.Controllers
         public async Task<IActionResult> GetPaged(
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10,
-            [FromQuery] string? filtro = null,
+            [FromQuery] InspeccionFiltroRequest? filtro = null,
             CancellationToken cancellationToken = default)
         {
+            filtro ??= new InspeccionFiltroRequest();
+
             var result = await _service.GetPagedAsync(pageNumber, pageSize, filtro, cancellationToken);
 
             if (!result.Success)

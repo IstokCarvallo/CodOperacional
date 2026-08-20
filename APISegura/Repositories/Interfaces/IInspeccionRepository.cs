@@ -24,7 +24,7 @@ namespace APISegura.Repositories.Interfaces
         Task<Result<PagedResult<InspeccionListDto>>> GetPagedAsync(
             int pageNumber,
             int pageSize,
-            string? filtro,
+            InspeccionFiltroRequest filtro,
             CancellationToken cancellationToken);
     }
 }

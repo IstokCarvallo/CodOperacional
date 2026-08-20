@@ -181,7 +181,7 @@ namespace APISegura.Repositories
         public async Task<Result<PagedResult<InspeccionListDto>>> GetPagedAsync(
             int pageNumber,
             int pageSize,
-            string? filtro,
+            InspeccionFiltroRequest filtro,
             CancellationToken cancellationToken)
         {
             using var connection = new SqlConnection(
@@ -193,7 +193,16 @@ namespace APISegura.Repositories
                 {
                     PageNumber = pageNumber,
                     PageSize = pageSize,
-                    Filtro = filtro
+
+                    filtro.FechaInspeccionDesde,
+                    filtro.FechaInspeccionHasta,
+
+                    filtro.FechaCorreoDesde,
+                    filtro.FechaCorreoHasta,
+
+                    filtro.NumeroCorreo,
+                    filtro.PateTempor,
+                    filtro.InspeccionId
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: cancellationToken);
