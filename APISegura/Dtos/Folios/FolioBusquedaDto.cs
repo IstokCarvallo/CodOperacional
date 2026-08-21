@@ -28,13 +28,13 @@
 
         public DateTime? FechaZarpe { get; set; }
 
-        public int? PuertoDestino { get; set; }
+        public int? PuertoDestinoC { get; set; }
 
-        public string? Puerto { get; set; }
+        public string? PuertoDestino { get; set; }
 
-        public int? PuertoOrigen { get; set; }
+        public int? PuertoOrigenC { get; set; }
 
-        public string? Puerto_Origen { get; set; }
+        public string? PuertoOrigen { get; set; }
 
         public string? Contenedor { get; set; }
 
